@@ -1,51 +1,63 @@
--- Load Rayfield and your ConsoleLib
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
+-- Load ConsoleLib
 local ConsoleLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib'))()
 
--- Create Rayfield window
-local Window = Rayfield:CreateWindow({
-    Name = "Rayfield + ConsoleLib test2",
-    LoadingTitle = "Initializing...",
-    LoadingIcon = "rbxassetid://4483345998"
-})
+-- Open console automatically for testing
+ConsoleLib.toggle()
 
--- Main tab
-local MainTab = Window:CreateTab("Main", 4483362458)
+-- Wait a bit to ensure GUI is visible
+task.wait(0.2)
 
--- Section for placeholders
-local PlaceholderSection = MainTab:CreateSection("Placeholders")
+-- Create a simple test GUI inside the console itself
+local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
--- Info button
-PlaceholderSection:CreateButton({
-    Name = "Print Info",
-    Callback = function()
-        ConsoleLib.info("Placeholder INFO message.")
-    end
-})
+-- Test frame for buttons
+local TestFrame = Instance.new("Frame")
+TestFrame.Size = UDim2.new(0, 180, 0, 120)
+TestFrame.Position = UDim2.new(0, 10, 0, 10)
+TestFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TestFrame.BorderSizePixel = 0
+TestFrame.Parent = PlayerGui:FindFirstChild("ConsoleLibGUI") or PlayerGui
 
--- Warning button
-PlaceholderSection:CreateButton({
-    Name = "Print Warning",
-    Callback = function()
-        ConsoleLib.warn("Placeholder WARNING message.")
-    end
-})
+-- Button helper
+local function createButton(text, posY, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 30)
+    btn.Position = UDim2.new(0, 5, 0, posY)
+    btn.BackgroundColor3 = ConsoleLib.config.AccentColor
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.Text = text
+    btn.Parent = TestFrame
+    btn.MouseButton1Click:Connect(callback)
+end
 
--- Error button
-PlaceholderSection:CreateButton({
-    Name = "Print Error",
-    Callback = function()
-        ConsoleLib.error("Placeholder ERROR message.")
-    end
-})
+-- INFO button
+createButton("Send INFO", 5, function()
+    ConsoleLib.info("This is an INFO message.")
+end)
 
--- Toggle ConsoleLib button (keeps the Rayfield button visible)
-PlaceholderSection:CreateButton({
-    Name = "Toggle Console Window",
-    Callback = function()
-        -- Open or close your draggable console
-        ConsoleLib.toggle()
-        -- Optional: print to verify
-        ConsoleLib.info("Console toggled via Rayfield button ✅")
-    end
-})
+-- WARN button
+createButton("Send WARN", 40, function()
+    ConsoleLib.warn("This is a WARN message.")
+end)
+
+-- ERROR button (bold & red)
+createButton("Send ERROR", 75, function()
+    local line = Instance.new("TextLabel")
+    line.Size = UDim2.new(1, -10, 0, 20)
+    line.BackgroundTransparency = 1
+    line.TextXAlignment = Enum.TextXAlignment.Left
+    line.TextYAlignment = Enum.TextYAlignment.Top
+    line.Font = Enum.Font.GothamBold -- bold
+    line.TextSize = 16
+    line.TextColor3 = Color3.fromRGB(255, 0, 0) -- red
+    line.Text = "[ERROR] This is an ERROR message."
+    line.Parent = PlayerGui:FindFirstChild("ConsoleLibGUI"):FindFirstChildWhichIsA("Frame")
+    -- Also add to internal _lines for auto-scrolling
+    table.insert(ConsoleLib._lines, line)
+    local sf = PlayerGui:FindFirstChild("ConsoleLibGUI"):FindFirstChildWhichIsA("Frame"):FindFirstChildWhichIsA("ScrollingFrame")
+    local layout = sf:FindFirstChildWhichIsA("UIListLayout")
+    sf.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
+    sf.CanvasPosition = Vector2.new(0, layout.AbsoluteContentSize.Y)
+end)
