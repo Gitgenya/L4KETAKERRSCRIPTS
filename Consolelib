@@ -2,8 +2,8 @@ local ConsoleLib = {}
 
 -- CONFIGURATION
 ConsoleLib.config = {
-    Width = 420,
-    Height = 280,
+    Width = 450,
+    Height = 320,
     MaxLines = 200,
     BackgroundColor = Color3.fromRGB(30, 30, 30),
     TopbarColor = Color3.fromRGB(25, 25, 25),
@@ -63,7 +63,7 @@ ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
-MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width / 2, 0.5, -ConsoleLib.config.Height / 2)
+MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width/2, 0.5, -ConsoleLib.config.Height/2)
 MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
 MainFrame.BorderSizePixel = 0
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -120,7 +120,7 @@ end)
 
 -- SCROLL FRAME
 local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size = UDim2.new(1, -12, 1, -120)
+ScrollingFrame.Size = UDim2.new(1, -12, 1, -140)
 ScrollingFrame.Position = UDim2.new(0, 6, 0, 40)
 ScrollingFrame.BackgroundTransparency = 1
 ScrollingFrame.BorderSizePixel = 0
@@ -157,8 +157,8 @@ UIListInput.Parent = InputFrame
 local LogTypes = {"INFO", "ERROR", "WARN", "OUTPUT"}
 local LogColors = {
     INFO = Color3.fromRGB(255, 255, 255),
-    ERROR = Color3.fromRGB(255, 120, 0), -- orange
-    WARN = Color3.fromRGB(255, 50, 50), -- red
+    ERROR = Color3.fromRGB(255, 120, 0),
+    WARN = Color3.fromRGB(255, 50, 50),
     OUTPUT = Color3.fromRGB(0, 170, 255)
 }
 local LogBold = {
@@ -193,7 +193,7 @@ local TextBox = Instance.new("TextBox")
 TextBox.Size = UDim2.new(1, -160, 0, 32)
 TextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.PlaceholderText = "Type message..."
+TextBox.PlaceholderText = "Type your message..."
 TextBox.ClearTextOnFocus = false
 TextBox.Font = ConsoleLib.config.Font
 TextBox.TextSize = 16
@@ -227,6 +227,73 @@ function ConsoleLib.addLine(text, type_)
     line.TextYAlignment = Enum.TextYAlignment.Top
     line.Font = LogBold[type_] and Enum.Font.GothamBold or ConsoleLib.config.Font
     line.TextSize = 16
-    line.TextColor
-::contentReference[oaicite:0]{index=0}
- 
+    line.TextColor3 = LogColors[type_] or ConsoleLib.config.TextColor
+    line.Text = string.format("[%s] %s", type_, text)
+    line.Parent = ScrollingFrame
+    table.insert(ConsoleLib._lines, line)
+    if #ConsoleLib._lines > ConsoleLib.config.MaxLines then
+        ConsoleLib._lines[1]:Destroy()
+        table.remove(ConsoleLib._lines, 1)
+    end
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
+    ScrollingFrame.CanvasPosition = Vector2.new(0, UIListLayout.AbsoluteContentSize.Y)
+end
+
+-- SHORTCUTS
+function ConsoleLib.info(text) ConsoleLib.addLine(text, "INFO") end
+function ConsoleLib.warn(text) ConsoleLib.addLine(text, "WARN") end
+function ConsoleLib.error(text) ConsoleLib.addLine(text, "ERROR") end
+function ConsoleLib.output(text) ConsoleLib.addLine(text, "OUTPUT") end
+
+SendButton.MouseButton1Click:Connect(function()
+    local msg = TextBox.Text
+    if msg == "" then return end
+    ConsoleLib.addLine(msg, CurrentType)
+    TextBox.Text = ""
+end)
+
+-- PLACEHOLDER TAB (Inspired by Kavo Darkrai UI)
+local TabFrame = Instance.new("Frame")
+TabFrame.Size = UDim2.new(1, -12, 0, 28)
+TabFrame.Position = UDim2.new(0, 6, 0, 38)
+TabFrame.BackgroundTransparency = 0
+TabFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
+TabFrame.Parent = MainFrame
+local UICornerTab = Instance.new("UICorner")
+UICornerTab.CornerRadius = UDim.new(0, 6)
+UICornerTab.Parent = TabFrame
+
+local PlaceholderLabel = Instance.new("TextLabel")
+PlaceholderLabel.Size = UDim2.new(1, -12, 1, 0)
+PlaceholderLabel.Position = UDim2.new(0,6,0,0)
+PlaceholderLabel.BackgroundTransparency = 1
+PlaceholderLabel.Text = "Placeholder Tab"
+PlaceholderLabel.TextColor3 = Color3.fromRGB(255,255,255)
+PlaceholderLabel.TextSize = 16
+PlaceholderLabel.Font = ConsoleLib.config.Font
+PlaceholderLabel.TextXAlignment = Enum.TextXAlignment.Left
+PlaceholderLabel.Parent = TabFrame
+
+-- TOGGLE BUTTON
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = ConsoleLib.config.ButtonSize
+ToggleButton.Position = ConsoleLib.config.ButtonPosition
+ToggleButton.AnchorPoint = Vector2.new(0.5,0.5)
+ToggleButton.BackgroundColor3 = ConsoleLib.config.AccentColor
+ToggleButton.TextColor3 = Color3.new(1,1,1)
+ToggleButton.Text="Console"
+ToggleButton.Font=Enum.Font.GothamBold
+ToggleButton.TextSize=18
+ToggleButton.Parent=ScreenGui
+if ConsoleLib.config.Draggable then makeDraggable(ToggleButton) end
+ToggleButton.MouseButton1Click:Connect(function()
+    ConsoleLib.Visible = not ConsoleLib.Visible
+    MainFrame.Visible = ConsoleLib.Visible
+end)
+
+function ConsoleLib.toggle()
+    ConsoleLib.Visible = not ConsoleLib.Visible
+    MainFrame.Visible = ConsoleLib.Visible
+end
+
+return ConsoleLib
