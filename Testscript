@@ -1,10 +1,11 @@
 -- Load ConsoleLib
-local ConsoleLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib'))()
+local ConsoleLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/ConsoleLib'))()
 
 -- Open the console automatically
 ConsoleLib.toggle()
 
 -- Test messages (optional)
 ConsoleLib.info("INFO: Console loaded successfully.")
-ConsoleLib.warn("WARN: This is a warning message.")
 ConsoleLib.error("ERROR: This is an error message.")
+ConsoleLib.warn("WARN: This is a warning message.")
+ConsoleLib.output("OUTPUT: This is a sample output message.")
