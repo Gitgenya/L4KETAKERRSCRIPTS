@@ -13,7 +13,8 @@ ConsoleLib.config = {
     Draggable = true,
     Font = Enum.Font.Gotham,
     Timestamp = true,
-    LightMode = false
+    LightMode = false,
+    Resizable = false
 }
 
 -- STORAGE
@@ -23,6 +24,7 @@ local CurrentType = "INFO"
 
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 -- DRAG
 local function makeDraggable(frame)
@@ -240,27 +242,24 @@ SendButton.Text="Send"
 SendButton.Font=Enum.Font.GothamBold
 SendButton.TextSize=16
 SendButton.Parent=InputFrame
-local cornerSend=Instance.new("UICorner")
-cornerSend.CornerRadius=UDim.new(0,4)
-cornerSend.Parent=SendButton
+local uicornerSend=Instance.new("UICorner")
+uicornerSend.CornerRadius=UDim.new(0,4)
+uicornerSend.Parent=SendButton
 
 -- ADD LINE FUNCTION
 function ConsoleLib.addLine(text,type_)
-    type_=type_ or "INFO"
+    type_=type_ or CurrentType
     local line=Instance.new("TextLabel")
-    line.Size=UDim2.new(1,-4,0,22)
+    line.Size=UDim2.new(1,-10,0,20)
     line.BackgroundTransparency=1
     line.TextXAlignment=Enum.TextXAlignment.Left
     line.TextYAlignment=Enum.TextYAlignment.Top
-    line.Font=LogBold[type_] and Enum.Font.GothamBold or ConsoleLib.config.Font
+    line.Font = LogBold[type_] and Enum.Font.GothamBold or ConsoleLib.config.Font
     line.TextSize=16
-    line.TextColor3=LogColors[type_] or ConsoleLib.config.TextColor
-    local timeStr=""
-    if ConsoleLib.config.Timestamp then
-        local t=os.date("*t")
-        timeStr=string.format("[%02d:%02d:%02d] ",t.hour,t.min,t.sec)
-    end
-    line.Text=string.format("%s[%s] %s",timeStr,type_,text)
+    local color=LogColors[type_] or ConsoleLib.config.TextColor
+    line.TextColor3=color
+    local ts = ConsoleLib.config.Timestamp and os.date("[%H:%M:%S] ") or ""
+    line.Text=string.format("%s[%s] %s",ts,type_,text)
     line.Parent=ScrollingFrame
     table.insert(ConsoleLib._lines,line)
     if #ConsoleLib._lines>ConsoleLib.config.MaxLines then
@@ -277,36 +276,49 @@ function ConsoleLib.warn(text) ConsoleLib.addLine(text,"WARN") end
 function ConsoleLib.error(text) ConsoleLib.addLine(text,"ERROR") end
 function ConsoleLib.output(text) ConsoleLib.addLine(text,"OUTPUT") end
 
+-- SEND LOG
 SendButton.MouseButton1Click:Connect(function()
-    local msg=TextBox.Text
-    if msg=="" then return end
-    ConsoleLib.addLine(msg,CurrentType)
-    TextBox.Text=""
+    local msg = TextBox.Text
+    if msg~="" then
+        ConsoleLib.addLine(msg)
+        TextBox.Text=""
+    end
 end)
 
 -- TAB SWITCHING
-ConsoleTab.MouseButton1Click:Connect(function()
-    ConsoleContainer.Visible=true
-    SettingsContainer.Visible=false
-    DebugContainer.Visible=false
-end)
-SettingsTab.MouseButton1Click:Connect(function()
-    ConsoleContainer.Visible=false
-    SettingsContainer.Visible=true
-    DebugContainer.Visible=false
-end)
-DebugTab.MouseButton1Click:Connect(function()
-    ConsoleContainer.Visible=false
-    SettingsContainer.Visible=false
-    DebugContainer.Visible=true
+for i,v in pairs({ConsoleContainer,SettingsContainer,DebugContainer}) do
+    local tabBtn=Tabs[i]
+    tabBtn.MouseButton1Click:Connect(function()
+        ConsoleContainer.Visible=false
+        SettingsContainer.Visible=false
+        DebugContainer.Visible=false
+        v.Visible=true
+    end)
+end
+
+-- DEBUG TAB (only InfYield)
+local InfYieldBtn = Instance.new("TextButton")
+InfYieldBtn.Size = UDim2.new(0,150,0,36)
+InfYieldBtn.Position = UDim2.new(0,10,0,10)
+InfYieldBtn.BackgroundColor3 = ConsoleLib.config.ButtonColor
+InfYieldBtn.TextColor3 = Color3.fromRGB(255,255,255)
+InfYieldBtn.Text = "InfYield"
+InfYieldBtn.Font = Enum.Font.GothamBold
+InfYieldBtn.TextSize = 16
+InfYieldBtn.Parent = DebugContainer
+local InfCorner = Instance.new("UICorner")
+InfCorner.CornerRadius = UDim.new(0,6)
+InfCorner.Parent = InfYieldBtn
+InfYieldBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source.lua"))()
 end)
 
 -- TOGGLE BUTTON
-local ToggleButton=Instance.new("TextButton")
-ToggleButton.Size=UDim2.new(0,120,0,36)
-ToggleButton.Position=UDim2.new(0.9,-60,0.95,-20)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0,120,0,40)
+ToggleButton.Position = UDim2.new(0.9,-60,0.95,-20)
 ToggleButton.AnchorPoint=Vector2.new(0.5,0.5)
-ToggleButton.BackgroundColor3=ConsoleLib.config.ButtonColor
+ToggleButton.BackgroundColor3=ConsoleLib.config.AccentColor
 ToggleButton.TextColor3=Color3.new(1,1,1)
 ToggleButton.Text="Console"
 ToggleButton.Font=Enum.Font.GothamBold
@@ -317,10 +329,5 @@ ToggleButton.MouseButton1Click:Connect(function()
     ConsoleLib.Visible = not ConsoleLib.Visible
     MainFrame.Visible = ConsoleLib.Visible
 end)
-
-function ConsoleLib.toggle()
-    ConsoleLib.Visible = not ConsoleLib.Visible
-    MainFrame.Visible = ConsoleLib.Visible
-end
 
 return ConsoleLib
