@@ -1,0 +1,124 @@
+local ConsoleLib = {}
+
+-- CONFIG
+ConsoleLib.config = {
+    Width = 600,
+    Height = 300,
+    MaxLines = 200,
+    BackgroundColor = Color3.fromRGB(28, 28, 28),
+    AccentColor = Color3.fromRGB(0, 170, 255),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    ButtonSize = UDim2.new(0, 120, 0, 40),
+    ButtonPosition = UDim2.new(0.9, -60, 0.95, -20) -- bottom-right
+}
+
+-- STORAGE
+ConsoleLib._lines = {}
+ConsoleLib.Visible = false
+
+local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+
+-- MAIN FRAME
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ConsoleLibGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
+MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width/2, 0.7, -ConsoleLib.config.Height/2)
+MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
+MainFrame.BorderSizePixel = 0
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+-- SCROLLING FRAME
+local ScrollingFrame = Instance.new("ScrollingFrame")
+ScrollingFrame.Size = UDim2.new(1, -10, 1, -10)
+ScrollingFrame.Position = UDim2.new(0, 5, 0, 5)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
+ScrollingFrame.ScrollBarThickness = 6
+ScrollingFrame.Parent = MainFrame
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Padding = UDim.new(0, 2)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Parent = ScrollingFrame
+
+-- TOGGLE BUTTON (independent of Rayfield)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = ConsoleLib.config.ButtonSize
+ToggleButton.Position = ConsoleLib.config.ButtonPosition
+ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
+ToggleButton.BackgroundColor3 = ConsoleLib.config.AccentColor
+ToggleButton.TextColor3 = Color3.new(1,1,1)
+ToggleButton.Text = "Console"
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 18
+ToggleButton.Parent = ScreenGui
+
+ToggleButton.MouseButton1Click:Connect(function()
+    ConsoleLib.Visible = not ConsoleLib.Visible
+    MainFrame.Visible = ConsoleLib.Visible
+end)
+
+-- FUNCTION TO ADD LINE
+function ConsoleLib.addLine(text, type_)
+    type_ = type_ or "INFO"
+    local line = Instance.new("TextLabel")
+    line.Size = UDim2.new(1, -10, 0, 20)
+    line.BackgroundTransparency = 1
+    line.TextXAlignment = Enum.TextXAlignment.Left
+    line.TextYAlignment = Enum.TextYAlignment.Top
+    line.Font = Enum.Font.Gotham
+    line.TextSize = 16
+    line.Text = string.format("[%s] %s", type_, text)
+    
+    if type_ == "ERROR" then
+        line.TextColor3 = Color3.fromRGB(255, 0, 0)
+    elseif type_ == "WARN" then
+        line.TextColor3 = Color3.fromRGB(255, 170, 0)
+    else
+        line.TextColor3 = ConsoleLib.config.TextColor
+    end
+
+    line.Parent = ScrollingFrame
+    table.insert(ConsoleLib._lines, line)
+    
+    if #ConsoleLib._lines > ConsoleLib.config.MaxLines then
+        ConsoleLib._lines[1]:Destroy()
+        table.remove(ConsoleLib._lines, 1)
+    end
+
+    ScrollingFrame.CanvasSize = UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y)
+    ScrollingFrame.CanvasPosition = Vector2.new(0, UIListLayout.AbsoluteContentSize.Y)
+end
+
+-- SHORTCUTS
+function ConsoleLib.info(text) ConsoleLib.addLine(text, "INFO") end
+function ConsoleLib.warn(text) ConsoleLib.addLine(text, "WARN") end
+function ConsoleLib.error(text) ConsoleLib.addLine(text, "ERROR") end
+
+-- SAFE CALL
+function ConsoleLib.safeCall(func, ...)
+    local success, err = pcall(func, ...)
+    if not success then
+        ConsoleLib.error(err)
+    end
+    return success, err
+end
+
+-- MANUAL TOGGLE FUNCTION
+function ConsoleLib.toggle()
+    ConsoleLib.Visible = not ConsoleLib.Visible
+    MainFrame.Visible = ConsoleLib.Visible
+end
+
+return ConsoleLib
+
