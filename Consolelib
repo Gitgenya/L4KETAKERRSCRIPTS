@@ -19,6 +19,39 @@ ConsoleLib.Visible = false
 
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
+-- UTILITY: Make GUI draggable from any part
+local function makeDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
 -- MAIN FRAME
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ConsoleLibGUI"
@@ -27,15 +60,18 @@ ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
-MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width / 2, 0.7, -ConsoleLib.config.Height / 2)
+MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width / 2, 0.5, -ConsoleLib.config.Height / 2)
 MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
 MainFrame.BorderSizePixel = 0
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Visible = false
 MainFrame.Active = true
-MainFrame.Draggable = ConsoleLib.config.Draggable
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
+
+if ConsoleLib.config.Draggable then
+    makeDraggable(MainFrame)
+end
 
 -- TOPBAR
 local Topbar = Instance.new("Frame")
@@ -71,7 +107,7 @@ end)
 
 -- SCROLLING FRAME
 local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size = UDim2.new(1, -10, 1, -40)
+ScrollingFrame.Size = UDim2.new(1, -10, 1, -70)
 ScrollingFrame.Position = UDim2.new(0, 5, 0, 35)
 ScrollingFrame.BackgroundTransparency = 1
 ScrollingFrame.BorderSizePixel = 0
@@ -84,7 +120,45 @@ UIListLayout.Padding = UDim.new(0, 2)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Parent = ScrollingFrame
 
--- TOGGLE BUTTON (independent of Rayfield)
+-- INPUT FRAME + TEXTBOX + SEND BUTTON
+local InputFrame = Instance.new("Frame")
+InputFrame.Size = UDim2.new(1, -10, 0, 30)
+InputFrame.Position = UDim2.new(0, 5, 1, -35)
+InputFrame.AnchorPoint = Vector2.new(0, 1)
+InputFrame.BackgroundTransparency = 1
+InputFrame.Parent = MainFrame
+
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(1, -70, 1, 0)
+TextBox.Position = UDim2.new(0, 0, 0, 0)
+TextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.Text = ""
+TextBox.PlaceholderText = "Type a message..."
+TextBox.ClearTextOnFocus = false
+TextBox.Font = Enum.Font.Gotham
+TextBox.TextSize = 16
+TextBox.Parent = InputFrame
+
+local SendButton = Instance.new("TextButton")
+SendButton.Size = UDim2.new(0, 60, 1, 0)
+SendButton.Position = UDim2.new(1, -60, 0, 0)
+SendButton.BackgroundColor3 = ConsoleLib.config.AccentColor
+SendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SendButton.Text = "Send"
+SendButton.Font = Enum.Font.GothamBold
+SendButton.TextSize = 16
+SendButton.Parent = InputFrame
+
+SendButton.MouseButton1Click:Connect(function()
+    local message = TextBox.Text
+    if message ~= "" then
+        ConsoleLib.info(message)
+        TextBox.Text = ""
+    end
+end)
+
+-- TOGGLE BUTTON (movable)
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = ConsoleLib.config.ButtonSize
 ToggleButton.Position = ConsoleLib.config.ButtonPosition
@@ -95,6 +169,11 @@ ToggleButton.Text = "Console"
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.TextSize = 18
 ToggleButton.Parent = ScreenGui
+
+-- Make toggle button draggable
+if ConsoleLib.config.Draggable then
+    makeDraggable(ToggleButton)
+end
 
 ToggleButton.MouseButton1Click:Connect(function()
     ConsoleLib.Visible = not ConsoleLib.Visible
