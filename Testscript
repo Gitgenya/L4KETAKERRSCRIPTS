@@ -1,10 +1,8 @@
-local ConsoleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/main/Consolelib", true))()
+-- Delta loader for ConsoleLib
+local ConsoleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/main/Consolelib"))()
 
--- Automatically open the console
-ConsoleLib.toggle()
+-- Auto toggle open
+ConsoleLib.toggle()  
 
--- Test logging
-ConsoleLib.info("Console loaded!")
-ConsoleLib.warn("This is a warn message")
-ConsoleLib.error("This is an error message")
-ConsoleLib.addLine("This is output type", "OUTPUT")
+-- Startup message
+ConsoleLib.info("ConsoleLib loaded via Delta 🚀")
