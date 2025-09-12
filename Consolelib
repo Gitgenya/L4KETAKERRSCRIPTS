@@ -1,19 +1,19 @@
 local ConsoleLib = {}
 
--- CONFIGURATION
+-- CONFIG
 ConsoleLib.config = {
     Width = 480,
-    Height = 320,
+    Height = 360,
     MaxLines = 200,
-    BackgroundColor = Color3.fromRGB(30, 30, 30),
-    TopbarColor = Color3.fromRGB(25, 25, 25),
-    AccentColor = Color3.fromRGB(147, 112, 219),
-    TextColor = Color3.fromRGB(240, 240, 240),
-    TabWidth = 120,
+    BackgroundColor = Color3.fromRGB(30,30,30),
+    TopbarColor = Color3.fromRGB(25,25,25),
+    AccentColor = Color3.fromRGB(147,112,219),
+    TextColor = Color3.fromRGB(240,240,240),
     Draggable = true,
     Font = Enum.Font.Gotham
 }
 
+-- STORAGE
 ConsoleLib._lines = {}
 ConsoleLib.Visible = false
 local CurrentType = "INFO"
@@ -21,31 +21,29 @@ local CurrentType = "INFO"
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 
--- DRAG FUNCTION
+-- DRAG
 local function makeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     local function update(input)
         local delta = input.Position - dragStart
         frame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
         )
     end
     frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+            dragging=true
+            dragStart=input.Position
+            startPos=frame.Position
             input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging=false end
+                if input.UserInputState==Enum.UserInputState.End then dragging=false end
             end)
         end
     end)
     frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then
-            dragInput = input
+        if input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then
+            dragInput=input
         end
     end)
     UserInputService.InputChanged:Connect(function(input)
@@ -56,91 +54,238 @@ end
 -- GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ConsoleLibGUI"
-ScreenGui.ResetOnSpawn = false
+ScreenGui.ResetOnSpawn=false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
-MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width/2, 0.5, -ConsoleLib.config.Height/2)
-MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
-MainFrame.BorderSizePixel = 0
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.Visible = false
-MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
+MainFrame.Size=UDim2.new(0,ConsoleLib.config.Width,0,ConsoleLib.config.Height)
+MainFrame.Position=UDim2.new(0.5,-ConsoleLib.config.Width/2,0.5,-ConsoleLib.config.Height/2)
+MainFrame.BackgroundColor3=ConsoleLib.config.BackgroundColor
+MainFrame.AnchorPoint=Vector2.new(0.5,0.5)
+MainFrame.Visible=false
+MainFrame.ClipsDescendants=true
+MainFrame.Parent=ScreenGui
+local UICornerMain = Instance.new("UICorner")
+UICornerMain.CornerRadius=UDim.new(0,10)
+UICornerMain.Parent=MainFrame
 if ConsoleLib.config.Draggable then makeDraggable(MainFrame) end
 
-local UICornerMain = Instance.new("UICorner")
-UICornerMain.CornerRadius = UDim.new(0, 10)
-UICornerMain.Parent = MainFrame
+-- TOPBAR
+local Topbar = Instance.new("Frame")
+Topbar.Size=UDim2.new(1,0,0,36)
+Topbar.BackgroundColor3=ConsoleLib.config.TopbarColor
+Topbar.BorderSizePixel=0
+Topbar.Parent=MainFrame
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size=UDim2.new(1,-40,1,0)
+TitleLabel.Position=UDim2.new(0,10,0,0)
+TitleLabel.BackgroundTransparency=1
+TitleLabel.Text="ConsoleLib"
+TitleLabel.TextColor3=Color3.fromRGB(255,255,255)
+TitleLabel.TextSize=18
+TitleLabel.TextXAlignment=Enum.TextXAlignment.Left
+TitleLabel.Font=ConsoleLib.config.Font
+TitleLabel.Parent=Topbar
 
--- LEFT TAB PANEL
-local TabPanel = Instance.new("Frame")
-TabPanel.Size = UDim2.new(0, ConsoleLib.config.TabWidth, 1, 0)
-TabPanel.Position = UDim2.new(0, 0, 0, 0)
-TabPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-TabPanel.Parent = MainFrame
+-- CLOSE BUTTON
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size=UDim2.new(0,36,0,36)
+CloseButton.Position=UDim2.new(1,-36,0,0)
+CloseButton.BackgroundColor3=Color3.fromRGB(200,0,0)
+CloseButton.Text="X"
+CloseButton.TextColor3=Color3.fromRGB(255,255,255)
+CloseButton.Font=Enum.Font.GothamBold
+CloseButton.TextSize=18
+CloseButton.Parent=Topbar
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius=UDim.new(0,6)
+CloseCorner.Parent=CloseButton
+CloseButton.MouseEnter:Connect(function() CloseButton.BackgroundColor3=Color3.fromRGB(255,50,50) end)
+CloseButton.MouseLeave:Connect(function() CloseButton.BackgroundColor3=Color3.fromRGB(200,0,0) end)
+CloseButton.MouseButton1Click:Connect(function()
+    ConsoleLib.Visible=false
+    MainFrame.Visible=false
+end)
 
-local UIListTabs = Instance.new("UIListLayout")
-UIListTabs.SortOrder = Enum.SortOrder.LayoutOrder
-UIListTabs.FillDirection = Enum.FillDirection.Vertical
-UIListTabs.Padding = UDim.new(0,2)
-UIListTabs.Parent = TabPanel
-
--- MAIN CONTENT PANEL
-local ContentPanel = Instance.new("Frame")
-ContentPanel.Size = UDim2.new(1, -ConsoleLib.config.TabWidth - 10, 1, -10)
-ContentPanel.Position = UDim2.new(0, ConsoleLib.config.TabWidth + 5, 0, 5)
-ContentPanel.BackgroundColor3 = Color3.fromRGB(30,30,30)
-ContentPanel.Parent = MainFrame
-local UICornerContent = Instance.new("UICorner")
-UICornerContent.CornerRadius = UDim.new(0,8)
-UICornerContent.Parent = ContentPanel
-
--- FUNCTION TO CREATE A TAB
+-- TAB BUTTONS
+local TabFrame = Instance.new("Frame")
+TabFrame.Size=UDim2.new(1,-12,0,28)
+TabFrame.Position=UDim2.new(0,6,0,38)
+TabFrame.BackgroundTransparency=1
+TabFrame.Parent=MainFrame
+local Tabs = {}
 local function createTab(name)
-    local tabButton = Instance.new("TextButton")
-    tabButton.Size = UDim2.new(1, -10, 0, 36)
-    tabButton.BackgroundColor3 = Color3.fromRGB(60,60,60)
-    tabButton.Text = name
-    tabButton.Font = Enum.Font.GothamBold
-    tabButton.TextSize = 16
-    tabButton.TextColor3 = Color3.fromRGB(255,255,255)
-    tabButton.Parent = TabPanel
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0,6)
-    corner.Parent = tabButton
-
-    tabButton.MouseEnter:Connect(function() tabButton.BackgroundColor3=ConsoleLib.config.AccentColor end)
-    tabButton.MouseLeave:Connect(function() tabButton.BackgroundColor3=Color3.fromRGB(60,60,60) end)
-
-    tabButton.MouseButton1Click:Connect(function()
-        for _,v in pairs(ContentPanel:GetChildren()) do v.Visible=false end
-        local frame = ContentPanel:FindFirstChild(name)
-        if frame then frame.Visible=true end
-    end)
-
-    -- create a frame for this tab inside content
-    local tabContent = Instance.new("Frame")
-    tabContent.Name = name
-    tabContent.Size = UDim2.new(1,0,1,0)
-    tabContent.BackgroundTransparency = 1
-    tabContent.Visible = false
-    tabContent.Parent = ContentPanel
+    local btn = Instance.new("TextButton")
+    btn.Size=UDim2.new(0,120,0,28)
+    btn.Position=UDim2.new(0,#Tabs*124,0,0)
+    btn.BackgroundColor3=ConsoleLib.config.AccentColor
+    btn.TextColor3=Color3.fromRGB(255,255,255)
+    btn.Text=name
+    btn.Font=Enum.Font.GothamBold
+    btn.TextSize=16
+    btn.Parent=TabFrame
+    local uic = Instance.new("UICorner")
+    uic.CornerRadius=UDim.new(0,6)
+    uic.Parent=btn
+    Tabs[#Tabs+1]=btn
+    return btn
 end
 
--- DEFAULT TABS
-createTab("Console")
-createTab("Placeholder")
-createTab("Settings")
+local ConsoleTab = createTab("Console")
+local SettingsTab = createTab("Settings")
+
+-- TAB CONTAINERS
+local ContainerFrame = Instance.new("Frame")
+ContainerFrame.Size=UDim2.new(1,-12,1,-80)
+ContainerFrame.Position=UDim2.new(0,6,0,72)
+ContainerFrame.BackgroundTransparency=1
+ContainerFrame.Parent=MainFrame
+
+local ConsoleContainer = Instance.new("Frame")
+ConsoleContainer.Size=UDim2.new(1,0,1,0)
+ConsoleContainer.BackgroundTransparency=1
+ConsoleContainer.Parent=ContainerFrame
+
+local SettingsContainer = Instance.new("Frame")
+SettingsContainer.Size=UDim2.new(1,0,1,0)
+SettingsContainer.BackgroundTransparency=1
+SettingsContainer.Visible=false
+SettingsContainer.Parent=ContainerFrame
+
+-- SCROLLING FRAME (CONSOLE)
+local ScrollingFrame = Instance.new("ScrollingFrame")
+ScrollingFrame.Size=UDim2.new(1,-12,1,-60)
+ScrollingFrame.Position=UDim2.new(0,6,0,0)
+ScrollingFrame.BackgroundTransparency=1
+ScrollingFrame.BorderSizePixel=0
+ScrollingFrame.ScrollBarThickness=6
+ScrollingFrame.Parent=ConsoleContainer
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Padding=UDim.new(0,2)
+UIListLayout.SortOrder=Enum.SortOrder.LayoutOrder
+UIListLayout.Parent=ScrollingFrame
+local UIPaddingLines = Instance.new("UIPadding")
+UIPaddingLines.PaddingLeft=UDim.new(0,6)
+UIPaddingLines.PaddingRight=UDim.new(0,6)
+UIPaddingLines.Parent=ScrollingFrame
+
+-- INPUT AREA (CONSOLE)
+local InputFrame = Instance.new("Frame")
+InputFrame.Size=UDim2.new(1,0,0,36)
+InputFrame.Position=UDim2.new(0,0,1, -36)
+InputFrame.AnchorPoint=Vector2.new(0,1)
+InputFrame.BackgroundTransparency=1
+InputFrame.Parent=ConsoleContainer
+local UIListInput = Instance.new("UIListLayout")
+UIListInput.FillDirection=Enum.FillDirection.Horizontal
+UIListInput.HorizontalAlignment=Enum.HorizontalAlignment.Left
+UIListInput.VerticalAlignment=Enum.VerticalAlignment.Center
+UIListInput.SortOrder=Enum.SortOrder.LayoutOrder
+UIListInput.Padding=UDim.new(0,6)
+UIListInput.Parent=InputFrame
+
+-- CYCLIC TYPE BUTTON
+local LogTypes={"INFO","ERROR","WARN","OUTPUT"}
+local LogColors={INFO=Color3.fromRGB(255,255,255),ERROR=Color3.fromRGB(255,120,0),WARN=Color3.fromRGB(255,50,50),OUTPUT=Color3.fromRGB(0,170,255)}
+local LogBold={INFO=false,ERROR=true,WARN=true,OUTPUT=true}
+local TypeButton = Instance.new("TextButton")
+TypeButton.Size=UDim2.new(0,80,0,32)
+TypeButton.BackgroundColor3=ConsoleLib.config.AccentColor
+TypeButton.TextColor3=Color3.fromRGB(255,255,255)
+TypeButton.Text="INFO"
+TypeButton.Font=Enum.Font.GothamBold
+TypeButton.TextSize=16
+TypeButton.Parent=InputFrame
+local uicornerType = Instance.new("UICorner")
+uicornerType.CornerRadius=UDim.new(0,4)
+uicornerType.Parent=TypeButton
+local typeIndex=1
+TypeButton.MouseButton1Click:Connect(function()
+    typeIndex=typeIndex+1
+    if typeIndex>#LogTypes then typeIndex=1 end
+    CurrentType=LogTypes[typeIndex]
+    TypeButton.Text=CurrentType
+end)
+
+-- TEXTBOX
+local TextBox = Instance.new("TextBox")
+TextBox.Size=UDim2.new(1,-160,0,32)
+TextBox.BackgroundColor3=Color3.fromRGB(40,40,40)
+TextBox.TextColor3=Color3.fromRGB(255,255,255)
+TextBox.PlaceholderText="Type message..."
+TextBox.ClearTextOnFocus=false
+TextBox.Font=ConsoleLib.config.Font
+TextBox.TextSize=16
+TextBox.Parent=InputFrame
+local uicornerText=Instance.new("UICorner")
+uicornerText.CornerRadius=UDim.new(0,4)
+uicornerText.Parent=TextBox
+
+-- SEND BUTTON
+local SendButton=Instance.new("TextButton")
+SendButton.Size=UDim2.new(0,70,0,32)
+SendButton.BackgroundColor3=ConsoleLib.config.AccentColor
+SendButton.TextColor3=Color3.fromRGB(255,255,255)
+SendButton.Text="Send"
+SendButton.Font=Enum.Font.GothamBold
+SendButton.TextSize=16
+SendButton.Parent=InputFrame
+local cornerSend=Instance.new("UICorner")
+cornerSend.CornerRadius=UDim.new(0,4)
+cornerSend.Parent=SendButton
+
+-- ADD LINE FUNCTION
+function ConsoleLib.addLine(text,type_)
+    type_=type_ or "INFO"
+    local line=Instance.new("TextLabel")
+    line.Size=UDim2.new(1,-4,0,22)
+    line.BackgroundTransparency=1
+    line.TextXAlignment=Enum.TextXAlignment.Left
+    line.TextYAlignment=Enum.TextYAlignment.Top
+    line.Font=LogBold[type_] and Enum.Font.GothamBold or ConsoleLib.config.Font
+    line.TextSize=16
+    line.TextColor3=LogColors[type_] or ConsoleLib.config.TextColor
+    line.Text=string.format("[%s] %s",type_,text)
+    line.Parent=ScrollingFrame
+    table.insert(ConsoleLib._lines,line)
+    if #ConsoleLib._lines>ConsoleLib.config.MaxLines then
+        ConsoleLib._lines[1]:Destroy()
+        table.remove(ConsoleLib._lines,1)
+    end
+    ScrollingFrame.CanvasSize=UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y)
+    ScrollingFrame.CanvasPosition=Vector2.new(0,UIListLayout.AbsoluteContentSize.Y)
+end
+
+-- SHORTCUTS
+function ConsoleLib.info(text) ConsoleLib.addLine(text,"INFO") end
+function ConsoleLib.warn(text) ConsoleLib.addLine(text,"WARN") end
+function ConsoleLib.error(text) ConsoleLib.addLine(text,"ERROR") end
+function ConsoleLib.output(text) ConsoleLib.addLine(text,"OUTPUT") end
+
+SendButton.MouseButton1Click:Connect(function()
+    local msg=TextBox.Text
+    if msg=="" then return end
+    ConsoleLib.addLine(msg,CurrentType)
+    TextBox.Text=""
+end)
+
+-- TAB SWITCHING
+ConsoleTab.MouseButton1Click:Connect(function()
+    ConsoleContainer.Visible=true
+    SettingsContainer.Visible=false
+end)
+SettingsTab.MouseButton1Click:Connect(function()
+    ConsoleContainer.Visible=false
+    SettingsContainer.Visible=true
+end)
 
 -- TOGGLE BUTTON
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 120, 0, 36)
-ToggleButton.Position = UDim2.new(0.95, -60, 0.95, -20)
-ToggleButton.AnchorPoint = Vector2.new(0.5,0.5)
-ToggleButton.BackgroundColor3 = ConsoleLib.config.AccentColor
-ToggleButton.TextColor3 = Color3.new(1,1,1)
+local ToggleButton=Instance.new("TextButton")
+ToggleButton.Size=UDim2.new(0,120,0,36)
+ToggleButton.Position=UDim2.new(0.9,-60,0.95,-20)
+ToggleButton.AnchorPoint=Vector2.new(0.5,0.5)
+ToggleButton.BackgroundColor3=ConsoleLib.config.AccentColor
+ToggleButton.TextColor3=Color3.new(1,1,1)
 ToggleButton.Text="Console"
 ToggleButton.Font=Enum.Font.GothamBold
 ToggleButton.TextSize=18
@@ -151,48 +296,9 @@ ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = ConsoleLib.Visible
 end)
 
--- FUNCTION TO ADD LOG LINES (inside Console tab)
-local LogColors = {
-    INFO=Color3.fromRGB(255,255,255),
-    ERROR=Color3.fromRGB(255,120,0),
-    WARN=Color3.fromRGB(255,50,50),
-    OUTPUT=Color3.fromRGB(0,170,255)
-}
-local LogBold = {INFO=false,ERROR=true,WARN=true,OUTPUT=true}
-
-local ConsoleContent = ContentPanel:FindFirstChild("Console")
-local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size = UDim2.new(1, -10, 1, -10)
-ScrollingFrame.Position = UDim2.new(0,5,0,5)
-ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.BorderSizePixel = 0
-ScrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
-ScrollingFrame.ScrollBarThickness = 6
-ScrollingFrame.Parent = ConsoleContent
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Padding = UDim.new(0,2)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Parent = ScrollingFrame
-
-function ConsoleLib.addLine(text,type_)
-    type_ = type_ or "INFO"
-    local line = Instance.new("TextLabel")
-    line.Size = UDim2.new(1,-4,0,22)
-    line.BackgroundTransparency = 1
-    line.TextXAlignment = Enum.TextXAlignment.Left
-    line.Font = LogBold[type_] and Enum.Font.GothamBold or Enum.Font.Gotham
-    line.TextColor3 = LogColors[type_] or Color3.fromRGB(255,255,255)
-    line.TextSize = 16
-    line.Text = string.format("[%s] %s",type_,text)
-    line.Parent = ScrollingFrame
-    table.insert(ConsoleLib._lines,line)
-    if #ConsoleLib._lines>ConsoleLib.config.MaxLines then
-        ConsoleLib._lines[1]:Destroy()
-        table.remove(ConsoleLib._lines,1)
-    end
-    ScrollingFrame.CanvasSize = UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y)
-    ScrollingFrame.CanvasPosition = Vector2.new(0,UIListLayout.AbsoluteContentSize.Y)
+function ConsoleLib.toggle()
+    ConsoleLib.Visible = not ConsoleLib.Visible
+    MainFrame.Visible = ConsoleLib.Visible
 end
 
 return ConsoleLib
