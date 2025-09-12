@@ -4,7 +4,7 @@ local ConsoleLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gi
 
 -- Create Rayfield window
 local Window = Rayfield:CreateWindow({
-    Name = "Rayfield + ConsoleLib",
+    Name = "Rayfield + ConsoleLib test2",
     LoadingTitle = "Initializing...",
     LoadingIcon = "rbxassetid://4483345998"
 })
@@ -39,11 +39,13 @@ PlaceholderSection:CreateButton({
     end
 })
 
--- Optional: You can also toggle ConsoleLib via a Rayfield button
+-- Toggle ConsoleLib button (keeps the Rayfield button visible)
 PlaceholderSection:CreateButton({
-    Name = "Toggle Console",
+    Name = "Toggle Console Window",
     Callback = function()
+        -- Open or close your draggable console
         ConsoleLib.toggle()
+        -- Optional: print to verify
+        ConsoleLib.info("Console toggled via Rayfield button ✅")
     end
 })
-
