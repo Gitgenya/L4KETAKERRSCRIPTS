@@ -198,7 +198,7 @@ UIListInput.Parent=InputFrame
 
 -- TYPE BUTTON
 local LogTypes={"INFO","ERROR","WARN","OUTPUT"}
-local LogColors={INFO=Color3.fromRGB(255,255,255),ERROR=Color3.fromRGB(255,120,0),WARN=Color3.fromRGB(255,50,50),OUTPUT=Color3.fromRGB(0,170,255)}
+local LogColors={INFO=Color3.fromRGB(255,255,255),ERROR=Color3.fromRGB(255,50,50),WARN=Color3.fromRGB(255,120,0),OUTPUT=Color3.fromRGB(0,170,255)}
 local LogBold={INFO=false,ERROR=true,WARN=true,OUTPUT=true}
 local TypeButton = Instance.new("TextButton")
 TypeButton.Size=UDim2.new(0,80,0,32)
@@ -296,7 +296,7 @@ for i,v in pairs({ConsoleContainer,SettingsContainer,DebugContainer}) do
     end)
 end
 
--- DEBUG TAB (only InfYield)
+-- DEBUG TAB (only InfYield with error catching)
 local InfYieldBtn = Instance.new("TextButton")
 InfYieldBtn.Size = UDim2.new(0,150,0,36)
 InfYieldBtn.Position = UDim2.new(0,10,0,10)
@@ -310,7 +310,14 @@ local InfCorner = Instance.new("UICorner")
 InfCorner.CornerRadius = UDim.new(0,6)
 InfCorner.Parent = InfYieldBtn
 InfYieldBtn.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source.lua"))()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end)
+    if not success then
+        ConsoleLib.error("Failed to load InfYield: "..tostring(err))
+    else
+        ConsoleLib.output("InfYield loaded successfully!")
+    end
 end)
 
 -- TOGGLE BUTTON
