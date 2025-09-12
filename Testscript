@@ -5,7 +5,10 @@ local ConsoleLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gi
 ConsoleLib.toggle()
 
 -- Test messages (optional)
-ConsoleLib.info("INFO: Console loaded successfully.")
-ConsoleLib.error("ERROR: This is an error message.")
-ConsoleLib.warn("WARN: This is a warning message.")
-ConsoleLib.output("OUTPUT: This is a sample output message.")
+ConsoleLib.addLine("Console loaded successfully.","INFO")
+ConsoleLib.addLine("This is an error message.","ERROR")
+ConsoleLib.addLine("This is a warning message.","WARN")
+ConsoleLib.addLine("This is a sample output message.","OUTPUT")
+
+-- Optional: example of sending a message using the UI textbox and type button
+-- You can also type into the console UI textbox manually
