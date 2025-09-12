@@ -1,14 +1,10 @@
--- Load ConsoleLib
-local ConsoleLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/ConsoleLib'))()
+local ConsoleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/main/Consolelib", true))()
 
--- Open the console automatically
+-- Automatically open the console
 ConsoleLib.toggle()
 
--- Test messages (optional)
-ConsoleLib.addLine("Console loaded successfully.","INFO")
-ConsoleLib.addLine("This is an error message.","ERROR")
-ConsoleLib.addLine("This is a warning message.","WARN")
-ConsoleLib.addLine("This is a sample output message.","OUTPUT")
-
--- Optional: example of sending a message using the UI textbox and type button
--- You can also type into the console UI textbox manually
+-- Test logging
+ConsoleLib.info("Console loaded!")
+ConsoleLib.warn("This is a warn message")
+ConsoleLib.error("This is an error message")
+ConsoleLib.addLine("This is output type", "OUTPUT")
