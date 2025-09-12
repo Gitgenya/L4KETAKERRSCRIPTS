@@ -1,63 +1,10 @@
 -- Load ConsoleLib
 local ConsoleLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib'))()
 
--- Open console automatically for testing
+-- Open the console automatically
 ConsoleLib.toggle()
 
--- Wait a bit to ensure GUI is visible
-task.wait(0.2)
-
--- Create a simple test GUI inside the console itself
-local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-
--- Test frame for buttons
-local TestFrame = Instance.new("Frame")
-TestFrame.Size = UDim2.new(0, 180, 0, 120)
-TestFrame.Position = UDim2.new(0, 10, 0, 10)
-TestFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-TestFrame.BorderSizePixel = 0
-TestFrame.Parent = PlayerGui:FindFirstChild("ConsoleLibGUI") or PlayerGui
-
--- Button helper
-local function createButton(text, posY, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 30)
-    btn.Position = UDim2.new(0, 5, 0, posY)
-    btn.BackgroundColor3 = ConsoleLib.config.AccentColor
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    btn.Text = text
-    btn.Parent = TestFrame
-    btn.MouseButton1Click:Connect(callback)
-end
-
--- INFO button
-createButton("Send INFO", 5, function()
-    ConsoleLib.info("This is an INFO message.")
-end)
-
--- WARN button
-createButton("Send WARN", 40, function()
-    ConsoleLib.warn("This is a WARN message.")
-end)
-
--- ERROR button (bold & red)
-createButton("Send ERROR", 75, function()
-    local line = Instance.new("TextLabel")
-    line.Size = UDim2.new(1, -10, 0, 20)
-    line.BackgroundTransparency = 1
-    line.TextXAlignment = Enum.TextXAlignment.Left
-    line.TextYAlignment = Enum.TextYAlignment.Top
-    line.Font = Enum.Font.GothamBold -- bold
-    line.TextSize = 16
-    line.TextColor3 = Color3.fromRGB(255, 0, 0) -- red
-    line.Text = "[ERROR] This is an ERROR message."
-    line.Parent = PlayerGui:FindFirstChild("ConsoleLibGUI"):FindFirstChildWhichIsA("Frame")
-    -- Also add to internal _lines for auto-scrolling
-    table.insert(ConsoleLib._lines, line)
-    local sf = PlayerGui:FindFirstChild("ConsoleLibGUI"):FindFirstChildWhichIsA("Frame"):FindFirstChildWhichIsA("ScrollingFrame")
-    local layout = sf:FindFirstChildWhichIsA("UIListLayout")
-    sf.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
-    sf.CanvasPosition = Vector2.new(0, layout.AbsoluteContentSize.Y)
-end)
+-- Test messages (optional)
+ConsoleLib.info("INFO: Console loaded successfully.")
+ConsoleLib.warn("WARN: This is a warning message.")
+ConsoleLib.error("ERROR: This is an error message.")
