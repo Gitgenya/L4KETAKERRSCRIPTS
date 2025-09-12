@@ -5,10 +5,11 @@ ConsoleLib.config = {
     Width = 400,
     Height = 260,
     MaxLines = 200,
-    BackgroundColor = Color3.fromRGB(25,25,25),
+    BackgroundColor = Color3.fromRGB(30,30,30),
+    TopbarColor = Color3.fromRGB(20,20,20),
     AccentColor = Color3.fromRGB(0,170,255),
     TextColor = Color3.fromRGB(240,240,240),
-    ButtonSize = UDim2.new(0,120,0,40),
+    ButtonSize = UDim2.new(0,120,0,36),
     ButtonPosition = UDim2.new(0.9,-60,0.95,-20),
     Draggable = true,
     Font = Enum.Font.Gotham
@@ -21,7 +22,7 @@ ConsoleLib.Visible = false
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 
--- UTILITY: Draggable GUI (mouse & touch)
+-- DRAG FUNCTION
 local function makeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     local function update(input)
@@ -53,14 +54,14 @@ local function makeDraggable(frame)
     end)
 end
 
--- MAIN GUI
+-- GUI CREATION
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ConsoleLibGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
+MainFrame.Size = UDim2.new(0,ConsoleLib.config.Width,0,ConsoleLib.config.Height)
 MainFrame.Position = UDim2.new(0.5,-ConsoleLib.config.Width/2,0.5,-ConsoleLib.config.Height/2)
 MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
 MainFrame.BorderSizePixel = 0
@@ -68,21 +69,22 @@ MainFrame.AnchorPoint = Vector2.new(0.5,0.5)
 MainFrame.Visible = false
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
-if ConsoleLib.config.Draggable then makeDraggable(MainFrame) end
 
--- Rounded corners
 local UICornerMain = Instance.new("UICorner")
-UICornerMain.CornerRadius = UDim.new(0,6)
+UICornerMain.CornerRadius = UDim.new(0,8)
 UICornerMain.Parent = MainFrame
+
+if ConsoleLib.config.Draggable then makeDraggable(MainFrame) end
 
 -- TOPBAR
 local Topbar = Instance.new("Frame")
 Topbar.Size = UDim2.new(1,0,0,32)
-Topbar.BackgroundColor3 = ConsoleLib.config.AccentColor
+Topbar.BackgroundColor3 = ConsoleLib.config.TopbarColor
 Topbar.BorderSizePixel = 0
 Topbar.Parent = MainFrame
+
 local TopbarCorner = Instance.new("UICorner")
-TopbarCorner.CornerRadius = UDim.new(0,6)
+TopbarCorner.CornerRadius = UDim.new(0,8)
 TopbarCorner.Parent = Topbar
 
 local TitleLabel = Instance.new("TextLabel")
@@ -110,7 +112,7 @@ CloseButton.MouseButton1Click:Connect(function()
     MainFrame.Visible=false
 end)
 
--- SCROLLING FRAME FOR LINES
+-- SCROLLING FRAME
 local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size = UDim2.new(1,-12,1,-110)
 ScrollingFrame.Position = UDim2.new(0,6,0,36)
@@ -147,7 +149,7 @@ HorizontalLayout.Parent = InputFrame
 
 -- DROPDOWN
 local Dropdown = Instance.new("TextButton")
-Dropdown.Size = UDim2.new(0,100,0,32)
+Dropdown.Size = UDim2.new(0,80,0,32)
 Dropdown.BackgroundColor3 = ConsoleLib.config.AccentColor
 Dropdown.TextColor3 = Color3.fromRGB(255,255,255)
 Dropdown.Text = "INFO"
@@ -172,7 +174,7 @@ Dropdown.MouseButton1Click:Connect(function()
     for i,type_ in ipairs(LogTypes) do
         local btn = Instance.new("TextButton")
         btn.Name="DropdownOption"
-        btn.Size=UDim2.new(0,100,0,32)
+        btn.Size=UDim2.new(0,80,0,32)
         btn.Position=UDim2.new(0,0,0,32*i)
         btn.BackgroundColor3=ConsoleLib.config.AccentColor
         btn.TextColor3=Color3.fromRGB(255,255,255)
@@ -192,7 +194,7 @@ end)
 
 -- TEXTBOX
 local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(1,0,1,0)
+TextBox.Size = UDim2.new(1,-160,0,32)
 TextBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 TextBox.TextColor3 = Color3.fromRGB(255,255,255)
 TextBox.PlaceholderText="Type message..."
@@ -200,14 +202,13 @@ TextBox.ClearTextOnFocus=false
 TextBox.Font = ConsoleLib.config.Font
 TextBox.TextSize = 16
 TextBox.Parent = InputFrame
-
 local UICornerText = Instance.new("UICorner")
 UICornerText.CornerRadius = UDim.new(0,4)
 UICornerText.Parent = TextBox
 
 -- SEND BUTTON
 local SendButton = Instance.new("TextButton")
-SendButton.Size = UDim2.new(0,70,1,0)
+SendButton.Size = UDim2.new(0,70,0,32)
 SendButton.BackgroundColor3 = ConsoleLib.config.AccentColor
 SendButton.TextColor3 = Color3.fromRGB(255,255,255)
 SendButton.Text="Send"
