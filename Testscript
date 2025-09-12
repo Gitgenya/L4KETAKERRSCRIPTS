@@ -1,32 +1,49 @@
+-- Load Rayfield and your ConsoleLib
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
 local ConsoleLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib'))()
 
+-- Create Rayfield window
 local Window = Rayfield:CreateWindow({
-    Name = "Rayfield ConsoleLib Integration",
+    Name = "Rayfield + ConsoleLib",
     LoadingTitle = "Initializing...",
     LoadingIcon = "rbxassetid://4483345998"
 })
 
-local Tab = Window:CreateTab("Main", 4483362458)
-local Section = Tab:CreateSection("Placeholders")
+-- Main tab
+local MainTab = Window:CreateTab("Main", 4483362458)
 
-Section:CreateButton({
+-- Section for placeholders
+local PlaceholderSection = MainTab:CreateSection("Placeholders")
+
+-- Info button
+PlaceholderSection:CreateButton({
     Name = "Print Info",
     Callback = function()
-        ConsoleLib.info("This is an info message.")
+        ConsoleLib.info("Placeholder INFO message.")
     end
 })
 
-Section:CreateButton({
+-- Warning button
+PlaceholderSection:CreateButton({
     Name = "Print Warning",
     Callback = function()
-        ConsoleLib.warn("This is a warning message.")
+        ConsoleLib.warn("Placeholder WARNING message.")
     end
 })
 
-Section:CreateButton({
+-- Error button
+PlaceholderSection:CreateButton({
     Name = "Print Error",
     Callback = function()
-        ConsoleLib.error("This is an error message.")
+        ConsoleLib.error("Placeholder ERROR message.")
     end
 })
+
+-- Optional: You can also toggle ConsoleLib via a Rayfield button
+PlaceholderSection:CreateButton({
+    Name = "Toggle Console",
+    Callback = function()
+        ConsoleLib.toggle()
+    end
+})
+
