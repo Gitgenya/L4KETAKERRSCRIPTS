@@ -256,8 +256,7 @@ function ConsoleLib.addLine(text,type_)
     line.TextYAlignment=Enum.TextYAlignment.Top
     line.Font = LogBold[type_] and Enum.Font.GothamBold or ConsoleLib.config.Font
     line.TextSize=16
-    local color=LogColors[type_] or ConsoleLib.config.TextColor
-    line.TextColor3=color
+    line.TextColor3=LogColors[type_] or ConsoleLib.config.TextColor
     local ts = ConsoleLib.config.Timestamp and os.date("[%H:%M:%S] ") or ""
     line.Text=string.format("%s[%s] %s",ts,type_,text)
     line.Parent=ScrollingFrame
@@ -276,9 +275,8 @@ function ConsoleLib.warn(text) ConsoleLib.addLine(text,"WARN") end
 function ConsoleLib.error(text) ConsoleLib.addLine(text,"ERROR") end
 function ConsoleLib.output(text) ConsoleLib.addLine(text,"OUTPUT") end
 
--- SEND LOG
 SendButton.MouseButton1Click:Connect(function()
-    local msg = TextBox.Text
+    local msg=TextBox.Text
     if msg~="" then
         ConsoleLib.addLine(msg)
         TextBox.Text=""
@@ -296,21 +294,21 @@ for i,v in pairs({ConsoleContainer,SettingsContainer,DebugContainer}) do
     end)
 end
 
--- DEBUG TAB (only InfYield with error catching)
-local InfYieldBtn = Instance.new("TextButton")
-InfYieldBtn.Size = UDim2.new(0,150,0,36)
-InfYieldBtn.Position = UDim2.new(0,10,0,10)
-InfYieldBtn.BackgroundColor3 = ConsoleLib.config.ButtonColor
-InfYieldBtn.TextColor3 = Color3.fromRGB(255,255,255)
-InfYieldBtn.Text = "InfYield"
-InfYieldBtn.Font = Enum.Font.GothamBold
-InfYieldBtn.TextSize = 16
-InfYieldBtn.Parent = DebugContainer
-local InfCorner = Instance.new("UICorner")
-InfCorner.CornerRadius = UDim.new(0,6)
-InfCorner.Parent = InfYieldBtn
+-- DEBUG TAB
+local InfYieldBtn=Instance.new("TextButton")
+InfYieldBtn.Size=UDim2.new(0,150,0,36)
+InfYieldBtn.Position=UDim2.new(0,10,0,10)
+InfYieldBtn.BackgroundColor3=ConsoleLib.config.ButtonColor
+InfYieldBtn.TextColor3=Color3.fromRGB(255,255,255)
+InfYieldBtn.Text="InfYield"
+InfYieldBtn.Font=Enum.Font.GothamBold
+InfYieldBtn.TextSize=16
+InfYieldBtn.Parent=DebugContainer
+local InfCorner=Instance.new("UICorner")
+InfCorner.CornerRadius=UDim.new(0,6)
+InfCorner.Parent=InfYieldBtn
 InfYieldBtn.MouseButton1Click:Connect(function()
-    local success, err = pcall(function()
+    local success,err=pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
     end)
     if not success then
@@ -322,8 +320,8 @@ end)
 
 -- TOGGLE BUTTON
 local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0,120,0,40)
-ToggleButton.Position = UDim2.new(0.9,-60,0.95,-20)
+ToggleButton.Size=UDim2.new(0,120,0,40)
+ToggleButton.Position=UDim2.new(0.9,-60,0.95,-20)
 ToggleButton.AnchorPoint=Vector2.new(0.5,0.5)
 ToggleButton.BackgroundColor3=ConsoleLib.config.AccentColor
 ToggleButton.TextColor3=Color3.new(1,1,1)
@@ -336,5 +334,58 @@ ToggleButton.MouseButton1Click:Connect(function()
     ConsoleLib.Visible = not ConsoleLib.Visible
     MainFrame.Visible = ConsoleLib.Visible
 end)
+
+-- SETTINGS TAB POPULATION
+local function createSettings()
+    local yPos=10
+    -- Light/Dark Mode, Accent, Button, Resizable, Timestamps
+    local function addToggle(labelText,configKey)
+        local label = Instance.new("TextLabel")
+        label.Size=UDim2.new(0,180,0,28)
+        label.Position=UDim2.new(0,10,0,yPos)
+        label.BackgroundTransparency=1
+        label.Text=labelText
+        label.TextColor3=ConsoleLib.config.TextColor
+        label.Font=Enum.Font.Gotham
+        label.TextSize=16
+        label.TextXAlignment=Enum.TextXAlignment.Left
+        label.Parent=SettingsContainer
+
+        local btn=Instance.new("TextButton")
+        btn.Size=UDim2.new(0,80,0,28)
+        btn.Position=UDim2.new(0,200,0,yPos)
+        btn.BackgroundColor3=ConsoleLib.config.ButtonColor
+        btn.TextColor3=Color3.fromRGB(255,255,255)
+        btn.Text=ConsoleLib.config[configKey] and "On" or "Off"
+        btn.Font=Enum.Font.GothamBold
+        btn.TextSize=16
+        btn.Parent=SettingsContainer
+        local uicorner=Instance.new("UICorner")
+        uicorner.CornerRadius=UDim.new(0,6)
+        uicorner.Parent=btn
+
+        btn.MouseButton1Click:Connect(function()
+            ConsoleLib.config[configKey]=not ConsoleLib.config[configKey]
+            btn.Text=ConsoleLib.config[configKey] and "On" or "Off"
+            if configKey=="LightMode" then
+                if ConsoleLib.config.LightMode then
+                    MainFrame.BackgroundColor3=Color3.fromRGB(245,245,245)
+                    TitleLabel.TextColor3=Color3.fromRGB(20,20,20)
+                    ConsoleLib.config.TextColor=Color3.fromRGB(20,20,20)
+                else
+                    MainFrame.BackgroundColor3=ConsoleLib.config.BackgroundColor
+                    TitleLabel.TextColor3=Color3.fromRGB(255,255,255)
+                    ConsoleLib.config.TextColor=Color3.fromRGB(240,240,240)
+                end
+            end
+        end)
+        yPos=yPos+40
+    end
+    addToggle("Light Mode:","LightMode")
+    addToggle("Resizable:","Resizable")
+    addToggle("Timestamps:","Timestamp")
+end
+
+createSettings()
 
 return ConsoleLib
