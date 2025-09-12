@@ -127,64 +127,46 @@ local function createTab(name)
     tabContent.BackgroundTransparency = 1
     tabContent.Visible = false
     tabContent.Parent = ContentPanel
-
-    return tabContent
 end
 
--- CREATE TABS
-local ConsoleContent = createTab("Console")
+-- DEFAULT TABS
+createTab("Console")
 createTab("Placeholder")
 createTab("Settings")
 
--- CONSOLE TAB SETUP
-local TypeButton = Instance.new("TextButton")
-TypeButton.Size = UDim2.new(0, 80, 0, 32)
-TypeButton.Position = UDim2.new(0, 6, 1, -42)
-TypeButton.AnchorPoint = Vector2.new(0,1)
-TypeButton.BackgroundColor3 = ConsoleLib.config.AccentColor
-TypeButton.TextColor3 = Color3.fromRGB(255,255,255)
-TypeButton.Text = "INFO"
-TypeButton.Font = Enum.Font.GothamBold
-TypeButton.TextSize = 16
-TypeButton.Parent = ConsoleContent
-local UICornerType = Instance.new("UICorner")
-UICornerType.CornerRadius = UDim.new(0, 4)
-UICornerType.Parent = TypeButton
+-- TOGGLE BUTTON
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 120, 0, 36)
+ToggleButton.Position = UDim2.new(0.95, -60, 0.95, -20)
+ToggleButton.AnchorPoint = Vector2.new(0.5,0.5)
+ToggleButton.BackgroundColor3 = ConsoleLib.config.AccentColor
+ToggleButton.TextColor3 = Color3.new(1,1,1)
+ToggleButton.Text="Console"
+ToggleButton.Font=Enum.Font.GothamBold
+ToggleButton.TextSize=18
+ToggleButton.Parent=ScreenGui
+if ConsoleLib.config.Draggable then makeDraggable(ToggleButton) end
+ToggleButton.MouseButton1Click:Connect(function()
+    ConsoleLib.Visible = not ConsoleLib.Visible
+    MainFrame.Visible = ConsoleLib.Visible
+end)
 
-local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(1, -160, 0, 32)
-TextBox.Position = UDim2.new(0, 90, 1, -42)
-TextBox.AnchorPoint = Vector2.new(0,1)
-TextBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-TextBox.TextColor3 = Color3.fromRGB(255,255,255)
-TextBox.PlaceholderText = "Type your message..."
-TextBox.ClearTextOnFocus = false
-TextBox.Font = ConsoleLib.config.Font
-TextBox.TextSize = 16
-TextBox.Parent = ConsoleContent
-local UICornerText = Instance.new("UICorner")
-UICornerText.CornerRadius = UDim.new(0,4)
-UICornerText.Parent = TextBox
+-- FUNCTION TO ADD LOG LINES (inside Console tab)
+local LogColors = {
+    INFO=Color3.fromRGB(255,255,255),
+    ERROR=Color3.fromRGB(255,120,0),
+    WARN=Color3.fromRGB(255,50,50),
+    OUTPUT=Color3.fromRGB(0,170,255)
+}
+local LogBold = {INFO=false,ERROR=true,WARN=true,OUTPUT=true}
 
-local SendButton = Instance.new("TextButton")
-SendButton.Size = UDim2.new(0,60,0,32)
-SendButton.Position = UDim2.new(1, -64,1,-42)
-SendButton.AnchorPoint = Vector2.new(0,1)
-SendButton.BackgroundColor3 = ConsoleLib.config.AccentColor
-SendButton.TextColor3 = Color3.fromRGB(255,255,255)
-SendButton.Text = "Send"
-SendButton.Font = Enum.Font.GothamBold
-SendButton.TextSize = 16
-SendButton.Parent = ConsoleContent
-local cornerSend = Instance.new("UICorner")
-cornerSend.CornerRadius = UDim.new(0,4)
-cornerSend.Parent = SendButton
-
+local ConsoleContent = ContentPanel:FindFirstChild("Console")
 local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size = UDim2.new(1, -12, 1, -90)
-ScrollingFrame.Position = UDim2.new(0,6,0,6)
+ScrollingFrame.Size = UDim2.new(1, -10, 1, -10)
+ScrollingFrame.Position = UDim2.new(0,5,0,5)
 ScrollingFrame.BackgroundTransparency = 1
 ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
 ScrollingFrame.ScrollBarThickness = 6
 ScrollingFrame.Parent = ConsoleContent
 
@@ -192,17 +174,6 @@ local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.Padding = UDim.new(0,2)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Parent = ScrollingFrame
-
-local LogTypes = {"INFO","ERROR","WARN","OUTPUT"}
-local LogColors = {INFO=Color3.fromRGB(255,255,255),ERROR=Color3.fromRGB(255,120,0),WARN=Color3.fromRGB(255,50,50),OUTPUT=Color3.fromRGB(0,170,255)}
-local LogBold = {INFO=false,ERROR=true,WARN=true,OUTPUT=true}
-local typeIndex = 1
-TypeButton.MouseButton1Click:Connect(function()
-    typeIndex = typeIndex+1
-    if typeIndex>#LogTypes then typeIndex=1 end
-    CurrentType = LogTypes[typeIndex]
-    TypeButton.Text=CurrentType
-end)
 
 function ConsoleLib.addLine(text,type_)
     type_ = type_ or "INFO"
@@ -223,29 +194,5 @@ function ConsoleLib.addLine(text,type_)
     ScrollingFrame.CanvasSize = UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y)
     ScrollingFrame.CanvasPosition = Vector2.new(0,UIListLayout.AbsoluteContentSize.Y)
 end
-
-SendButton.MouseButton1Click:Connect(function()
-    local msg = TextBox.Text
-    if msg=="" then return end
-    ConsoleLib.addLine(msg,CurrentType)
-    TextBox.Text=""
-end)
-
--- TOGGLE BUTTON
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 120,0,36)
-ToggleButton.Position = UDim2.new(0.95,-60,0.95,-20)
-ToggleButton.AnchorPoint = Vector2.new(0.5,0.5)
-ToggleButton.BackgroundColor3 = ConsoleLib.config.AccentColor
-ToggleButton.TextColor3 = Color3.new(1,1,1)
-ToggleButton.Text="Console"
-ToggleButton.Font=Enum.Font.GothamBold
-ToggleButton.TextSize=18
-ToggleButton.Parent=ScreenGui
-if ConsoleLib.config.Draggable then makeDraggable(ToggleButton) end
-ToggleButton.MouseButton1Click:Connect(function()
-    ConsoleLib.Visible = not ConsoleLib.Visible
-    MainFrame.Visible = ConsoleLib.Visible
-end)
 
 return ConsoleLib
