@@ -7,10 +7,13 @@ ConsoleLib.config = {
     MaxLines = 200,
     BackgroundColor = Color3.fromRGB(30,30,30),
     TopbarColor = Color3.fromRGB(25,25,25),
-    AccentColor = Color3.fromRGB(147,112,219),
+    AccentColor = Color3.fromRGB(147,112,219), -- default purple
+    ButtonColor = Color3.fromRGB(147,112,219),
     TextColor = Color3.fromRGB(240,240,240),
     Draggable = true,
-    Font = Enum.Font.Gotham
+    Font = Enum.Font.Gotham,
+    Timestamp = true,
+    LightMode = false
 }
 
 -- STORAGE
@@ -55,7 +58,7 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ConsoleLibGUI"
 ScreenGui.ResetOnSpawn=false
-ScreenGui.Parent = PlayerGui
+ScreenGui.Parent=PlayerGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size=UDim2.new(0,ConsoleLib.config.Width,0,ConsoleLib.config.Height)
@@ -133,6 +136,7 @@ end
 
 local ConsoleTab = createTab("Console")
 local SettingsTab = createTab("Settings")
+local DebugTab = createTab("Debug")
 
 -- TAB CONTAINERS
 local ContainerFrame = Instance.new("Frame")
@@ -152,6 +156,12 @@ SettingsContainer.BackgroundTransparency=1
 SettingsContainer.Visible=false
 SettingsContainer.Parent=ContainerFrame
 
+local DebugContainer = Instance.new("Frame")
+DebugContainer.Size=UDim2.new(1,0,1,0)
+DebugContainer.BackgroundTransparency=1
+DebugContainer.Visible=false
+DebugContainer.Parent=ContainerFrame
+
 -- SCROLLING FRAME (CONSOLE)
 local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size=UDim2.new(1,-12,1,-60)
@@ -169,10 +179,10 @@ UIPaddingLines.PaddingLeft=UDim.new(0,6)
 UIPaddingLines.PaddingRight=UDim.new(0,6)
 UIPaddingLines.Parent=ScrollingFrame
 
--- INPUT AREA (CONSOLE)
+-- INPUT AREA
 local InputFrame = Instance.new("Frame")
 InputFrame.Size=UDim2.new(1,0,0,36)
-InputFrame.Position=UDim2.new(0,0,1, -36)
+InputFrame.Position=UDim2.new(0,0,1,-36)
 InputFrame.AnchorPoint=Vector2.new(0,1)
 InputFrame.BackgroundTransparency=1
 InputFrame.Parent=ConsoleContainer
@@ -184,13 +194,13 @@ UIListInput.SortOrder=Enum.SortOrder.LayoutOrder
 UIListInput.Padding=UDim.new(0,6)
 UIListInput.Parent=InputFrame
 
--- CYCLIC TYPE BUTTON
+-- TYPE BUTTON
 local LogTypes={"INFO","ERROR","WARN","OUTPUT"}
 local LogColors={INFO=Color3.fromRGB(255,255,255),ERROR=Color3.fromRGB(255,120,0),WARN=Color3.fromRGB(255,50,50),OUTPUT=Color3.fromRGB(0,170,255)}
 local LogBold={INFO=false,ERROR=true,WARN=true,OUTPUT=true}
 local TypeButton = Instance.new("TextButton")
 TypeButton.Size=UDim2.new(0,80,0,32)
-TypeButton.BackgroundColor3=ConsoleLib.config.AccentColor
+TypeButton.BackgroundColor3=ConsoleLib.config.ButtonColor
 TypeButton.TextColor3=Color3.fromRGB(255,255,255)
 TypeButton.Text="INFO"
 TypeButton.Font=Enum.Font.GothamBold
@@ -224,7 +234,7 @@ uicornerText.Parent=TextBox
 -- SEND BUTTON
 local SendButton=Instance.new("TextButton")
 SendButton.Size=UDim2.new(0,70,0,32)
-SendButton.BackgroundColor3=ConsoleLib.config.AccentColor
+SendButton.BackgroundColor3=ConsoleLib.config.ButtonColor
 SendButton.TextColor3=Color3.fromRGB(255,255,255)
 SendButton.Text="Send"
 SendButton.Font=Enum.Font.GothamBold
@@ -245,7 +255,12 @@ function ConsoleLib.addLine(text,type_)
     line.Font=LogBold[type_] and Enum.Font.GothamBold or ConsoleLib.config.Font
     line.TextSize=16
     line.TextColor3=LogColors[type_] or ConsoleLib.config.TextColor
-    line.Text=string.format("[%s] %s",type_,text)
+    local timeStr=""
+    if ConsoleLib.config.Timestamp then
+        local t=os.date("*t")
+        timeStr=string.format("[%02d:%02d:%02d] ",t.hour,t.min,t.sec)
+    end
+    line.Text=string.format("%s[%s] %s",timeStr,type_,text)
     line.Parent=ScrollingFrame
     table.insert(ConsoleLib._lines,line)
     if #ConsoleLib._lines>ConsoleLib.config.MaxLines then
@@ -273,10 +288,17 @@ end)
 ConsoleTab.MouseButton1Click:Connect(function()
     ConsoleContainer.Visible=true
     SettingsContainer.Visible=false
+    DebugContainer.Visible=false
 end)
 SettingsTab.MouseButton1Click:Connect(function()
     ConsoleContainer.Visible=false
     SettingsContainer.Visible=true
+    DebugContainer.Visible=false
+end)
+DebugTab.MouseButton1Click:Connect(function()
+    ConsoleContainer.Visible=false
+    SettingsContainer.Visible=false
+    DebugContainer.Visible=true
 end)
 
 -- TOGGLE BUTTON
@@ -284,7 +306,7 @@ local ToggleButton=Instance.new("TextButton")
 ToggleButton.Size=UDim2.new(0,120,0,36)
 ToggleButton.Position=UDim2.new(0.9,-60,0.95,-20)
 ToggleButton.AnchorPoint=Vector2.new(0.5,0.5)
-ToggleButton.BackgroundColor3=ConsoleLib.config.AccentColor
+ToggleButton.BackgroundColor3=ConsoleLib.config.ButtonColor
 ToggleButton.TextColor3=Color3.new(1,1,1)
 ToggleButton.Text="Console"
 ToggleButton.Font=Enum.Font.GothamBold
