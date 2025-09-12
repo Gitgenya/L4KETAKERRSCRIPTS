@@ -1,15 +1,15 @@
 local ConsoleLib = {}
 
--- CONFIGURATION
+-- CONFIG
 ConsoleLib.config = {
     Width = 400,
-    Height = 250,
+    Height = 260,
     MaxLines = 200,
     BackgroundColor = Color3.fromRGB(25,25,25),
     AccentColor = Color3.fromRGB(0,170,255),
     TextColor = Color3.fromRGB(240,240,240),
     ButtonSize = UDim2.new(0,120,0,40),
-    ButtonPosition = UDim2.new(0.9, -60, 0.95, -20),
+    ButtonPosition = UDim2.new(0.9,-60,0.95,-20),
     Draggable = true,
     Font = Enum.Font.Gotham
 }
@@ -53,7 +53,7 @@ local function makeDraggable(frame)
     end)
 end
 
--- GUI
+-- MAIN GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ConsoleLibGUI"
 ScreenGui.ResetOnSpawn = false
@@ -61,22 +61,29 @@ ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
-MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width/2, 0.5, -ConsoleLib.config.Height/2)
+MainFrame.Position = UDim2.new(0.5,-ConsoleLib.config.Width/2,0.5,-ConsoleLib.config.Height/2)
 MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
 MainFrame.BorderSizePixel = 0
 MainFrame.AnchorPoint = Vector2.new(0.5,0.5)
 MainFrame.Visible = false
-MainFrame.Active = true
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 if ConsoleLib.config.Draggable then makeDraggable(MainFrame) end
 
--- Topbar
+-- Rounded corners
+local UICornerMain = Instance.new("UICorner")
+UICornerMain.CornerRadius = UDim.new(0,6)
+UICornerMain.Parent = MainFrame
+
+-- TOPBAR
 local Topbar = Instance.new("Frame")
 Topbar.Size = UDim2.new(1,0,0,32)
 Topbar.BackgroundColor3 = ConsoleLib.config.AccentColor
 Topbar.BorderSizePixel = 0
 Topbar.Parent = MainFrame
+local TopbarCorner = Instance.new("UICorner")
+TopbarCorner.CornerRadius = UDim.new(0,6)
+TopbarCorner.Parent = Topbar
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1,-40,1,0)
@@ -103,7 +110,7 @@ CloseButton.MouseButton1Click:Connect(function()
     MainFrame.Visible=false
 end)
 
--- Scrolling Frame
+-- SCROLLING FRAME FOR LINES
 local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size = UDim2.new(1,-12,1,-110)
 ScrollingFrame.Position = UDim2.new(0,6,0,36)
@@ -117,27 +124,42 @@ UIListLayout.Padding = UDim.new(0,2)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Parent = ScrollingFrame
 
--- Input Area
+local UIPaddingLines = Instance.new("UIPadding")
+UIPaddingLines.PaddingLeft = UDim.new(0,4)
+UIPaddingLines.PaddingRight = UDim.new(0,4)
+UIPaddingLines.Parent = ScrollingFrame
+
+-- INPUT ROW
 local InputFrame = Instance.new("Frame")
-InputFrame.Size = UDim2.new(1,-12,0,50)
-InputFrame.Position = UDim2.new(0,6,1,-55)
+InputFrame.Size = UDim2.new(1,-12,0,36)
+InputFrame.Position = UDim2.new(0,6,1,-40)
 InputFrame.AnchorPoint = Vector2.new(0,1)
 InputFrame.BackgroundTransparency = 1
 InputFrame.Parent = MainFrame
 
--- Dropdown
+local HorizontalLayout = Instance.new("UIListLayout")
+HorizontalLayout.FillDirection = Enum.FillDirection.Horizontal
+HorizontalLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+HorizontalLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+HorizontalLayout.SortOrder = Enum.SortOrder.LayoutOrder
+HorizontalLayout.Padding = UDim.new(0,6)
+HorizontalLayout.Parent = InputFrame
+
+-- DROPDOWN
 local Dropdown = Instance.new("TextButton")
 Dropdown.Size = UDim2.new(0,100,0,32)
-Dropdown.Position = UDim2.new(0,0,0,0)
 Dropdown.BackgroundColor3 = ConsoleLib.config.AccentColor
 Dropdown.TextColor3 = Color3.fromRGB(255,255,255)
 Dropdown.Text = "INFO"
 Dropdown.Font = Enum.Font.GothamBold
 Dropdown.TextSize = 16
 Dropdown.Parent = InputFrame
+local UICornerDropdown = Instance.new("UICorner")
+UICornerDropdown.CornerRadius = UDim.new(0,4)
+UICornerDropdown.Parent = Dropdown
 
 local LogTypes = {"INFO","WARN","ERROR"}
-local dropdownOpen=false
+local dropdownOpen = false
 local function closeDropdown()
     for _,v in pairs(InputFrame:GetChildren()) do
         if v:IsA("TextButton") and v.Name=="DropdownOption" then v:Destroy() end
@@ -157,38 +179,46 @@ Dropdown.MouseButton1Click:Connect(function()
         btn.Text=type_
         btn.Font=ConsoleLib.config.Font
         btn.TextSize=16
-        btn.Parent=InputFrame
+        btn.Parent = InputFrame
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0,4)
+        corner.Parent = btn
         btn.MouseButton1Click:Connect(function()
-            Dropdown.Text=type_
+            Dropdown.Text = type_
             closeDropdown()
         end)
     end
 end)
 
--- Textbox
+-- TEXTBOX
 local TextBox = Instance.new("TextBox")
-TextBox.Size=UDim2.new(1,-180,0,32)
-TextBox.Position=UDim2.new(0,110,0,0)
-TextBox.BackgroundColor3=Color3.fromRGB(40,40,40)
-TextBox.TextColor3=Color3.fromRGB(255,255,255)
-TextBox.PlaceholderText="Type your message..."
+TextBox.Size = UDim2.new(1,0,1,0)
+TextBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+TextBox.TextColor3 = Color3.fromRGB(255,255,255)
+TextBox.PlaceholderText="Type message..."
 TextBox.ClearTextOnFocus=false
-TextBox.Font=ConsoleLib.config.Font
-TextBox.TextSize=16
-TextBox.Parent=InputFrame
+TextBox.Font = ConsoleLib.config.Font
+TextBox.TextSize = 16
+TextBox.Parent = InputFrame
 
--- Send Button
+local UICornerText = Instance.new("UICorner")
+UICornerText.CornerRadius = UDim.new(0,4)
+UICornerText.Parent = TextBox
+
+-- SEND BUTTON
 local SendButton = Instance.new("TextButton")
-SendButton.Size=UDim2.new(0,70,0,32)
-SendButton.Position=UDim2.new(1,-70,0,0)
-SendButton.BackgroundColor3=ConsoleLib.config.AccentColor
-SendButton.TextColor3=Color3.fromRGB(255,255,255)
+SendButton.Size = UDim2.new(0,70,1,0)
+SendButton.BackgroundColor3 = ConsoleLib.config.AccentColor
+SendButton.TextColor3 = Color3.fromRGB(255,255,255)
 SendButton.Text="Send"
 SendButton.Font=Enum.Font.GothamBold
 SendButton.TextSize=16
-SendButton.Parent=InputFrame
+SendButton.Parent = InputFrame
+local cornerSend = Instance.new("UICorner")
+cornerSend.CornerRadius = UDim.new(0,4)
+cornerSend.Parent = SendButton
 
--- Add Line Function
+-- ADD LINE FUNCTION
 function ConsoleLib.addLine(text,type_)
     type_ = type_ or "INFO"
     local line = Instance.new("TextLabel")
@@ -210,20 +240,19 @@ function ConsoleLib.addLine(text,type_)
     ScrollingFrame.CanvasPosition = Vector2.new(0,UIListLayout.AbsoluteContentSize.Y)
 end
 
--- Shortcuts
+-- SHORTCUTS
 function ConsoleLib.info(text) ConsoleLib.addLine(text,"INFO") end
 function ConsoleLib.warn(text) ConsoleLib.addLine(text,"WARN") end
 function ConsoleLib.error(text) ConsoleLib.addLine(text,"ERROR") end
 
--- Send Button Logic
 SendButton.MouseButton1Click:Connect(function()
-    local msg=TextBox.Text
+    local msg = TextBox.Text
     if msg=="" then return end
     ConsoleLib.addLine(msg,Dropdown.Text)
     TextBox.Text=""
 end)
 
--- Toggle Button
+-- TOGGLE BUTTON
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = ConsoleLib.config.ButtonSize
 ToggleButton.Position = ConsoleLib.config.ButtonPosition
@@ -239,7 +268,7 @@ ToggleButton.MouseButton1Click:Connect(function()
     ConsoleLib.toggle()
 end)
 
--- Manual toggle
+-- MANUAL TOGGLE
 function ConsoleLib.toggle()
     ConsoleLib.Visible = not ConsoleLib.Visible
     MainFrame.Visible = ConsoleLib.Visible
