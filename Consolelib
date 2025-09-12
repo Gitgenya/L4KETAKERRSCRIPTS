@@ -2,28 +2,28 @@ local ConsoleLib = {}
 
 -- CONFIGURATION
 ConsoleLib.config = {
-    Width = 600,
-    Height = 300,
-    MaxLines = 200,
+    Width = 350,  -- smaller for mobile
+    Height = 200, -- smaller for mobile
+    MaxLines = 150,
     BackgroundColor = Color3.fromRGB(28, 28, 28),
     AccentColor = Color3.fromRGB(0, 170, 255),
     TextColor = Color3.fromRGB(255, 255, 255),
-    ButtonSize = UDim2.new(0, 120, 0, 40),
-    ButtonPosition = UDim2.new(0.9, -60, 0.95, -20), -- bottom-right
+    ButtonSize = UDim2.new(0, 100, 0, 35),
+    ButtonPosition = UDim2.new(0.9, -50, 0.95, -18),
     Draggable = true,
 }
 
--- STORAGE
 ConsoleLib._lines = {}
 ConsoleLib.Visible = false
 
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
 
--- UTILITY: Make GUI draggable from any part
+-- MAKE ANY GUI DRAGGABLE
 local function makeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
@@ -35,11 +35,11 @@ local function makeDraggable(frame)
         end
     end)
     frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
     end)
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
+    UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
             frame.Position = UDim2.new(
@@ -52,7 +52,7 @@ local function makeDraggable(frame)
     end)
 end
 
--- MAIN FRAME
+-- MAIN GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ConsoleLibGUI"
 ScreenGui.ResetOnSpawn = false
@@ -60,7 +60,7 @@ ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
-MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width / 2, 0.5, -ConsoleLib.config.Height / 2)
+MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width/2, 0.5, -ConsoleLib.config.Height/2)
 MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
 MainFrame.BorderSizePixel = 0
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -75,31 +75,30 @@ end
 
 -- TOPBAR
 local Topbar = Instance.new("Frame")
-Topbar.Size = UDim2.new(1, 0, 0, 30)
+Topbar.Size = UDim2.new(1, 0, 0, 25)
 Topbar.BackgroundColor3 = ConsoleLib.config.AccentColor
 Topbar.BorderSizePixel = 0
 Topbar.Parent = MainFrame
 
 local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, -40, 1, 0)
-TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.Size = UDim2.new(1, -30, 1, 0)
+TitleLabel.Position = UDim2.new(0, 5, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "Console"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 18
+TitleLabel.TextColor3 = Color3.new(1,1,1)
+TitleLabel.TextSize = 16
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = Topbar
 
 local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Size = UDim2.new(0, 25, 0, 25)
+CloseButton.Position = UDim2.new(1, -25, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255,0,0)
 CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 18
+CloseButton.TextColor3 = Color3.new(1,1,1)
+CloseButton.TextSize = 16
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Parent = Topbar
-
 CloseButton.MouseButton1Click:Connect(function()
     ConsoleLib.Visible = false
     MainFrame.Visible = false
@@ -107,70 +106,68 @@ end)
 
 -- SCROLLING FRAME
 local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size = UDim2.new(1, -10, 1, -70)
-ScrollingFrame.Position = UDim2.new(0, 5, 0, 35)
+ScrollingFrame.Size = UDim2.new(1, -10, 1, -60)
+ScrollingFrame.Position = UDim2.new(0, 5, 0, 30)
 ScrollingFrame.BackgroundTransparency = 1
 ScrollingFrame.BorderSizePixel = 0
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
 ScrollingFrame.ScrollBarThickness = 6
 ScrollingFrame.Parent = MainFrame
 
 local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Padding = UDim.new(0, 2)
+UIListLayout.Padding = UDim.new(0,2)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Parent = ScrollingFrame
 
--- INPUT FRAME + TEXTBOX + SEND BUTTON
+-- INPUT FRAME
 local InputFrame = Instance.new("Frame")
-InputFrame.Size = UDim2.new(1, -10, 0, 30)
-InputFrame.Position = UDim2.new(0, 5, 1, -35)
-InputFrame.AnchorPoint = Vector2.new(0, 1)
+InputFrame.Size = UDim2.new(1, -10, 0, 25)
+InputFrame.Position = UDim2.new(0, 5, 1, -30)
+InputFrame.AnchorPoint = Vector2.new(0,1)
 InputFrame.BackgroundTransparency = 1
 InputFrame.Parent = MainFrame
 
 local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(1, -70, 1, 0)
-TextBox.Position = UDim2.new(0, 0, 0, 0)
-TextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.Size = UDim2.new(1, -55, 1, 0)
+TextBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+TextBox.TextColor3 = Color3.new(1,1,1)
 TextBox.Text = ""
-TextBox.PlaceholderText = "Type a message..."
+TextBox.PlaceholderText = "Type..."
 TextBox.ClearTextOnFocus = false
 TextBox.Font = Enum.Font.Gotham
-TextBox.TextSize = 16
+TextBox.TextSize = 14
 TextBox.Parent = InputFrame
 
 local SendButton = Instance.new("TextButton")
-SendButton.Size = UDim2.new(0, 60, 1, 0)
-SendButton.Position = UDim2.new(1, -60, 0, 0)
+SendButton.Size = UDim2.new(0, 50, 1, 0)
+SendButton.Position = UDim2.new(1, -50, 0, 0)
 SendButton.BackgroundColor3 = ConsoleLib.config.AccentColor
-SendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SendButton.TextColor3 = Color3.new(1,1,1)
 SendButton.Text = "Send"
 SendButton.Font = Enum.Font.GothamBold
-SendButton.TextSize = 16
+SendButton.TextSize = 14
 SendButton.Parent = InputFrame
 
 SendButton.MouseButton1Click:Connect(function()
-    local message = TextBox.Text
-    if message ~= "" then
-        ConsoleLib.info(message)
+    local msg = TextBox.Text
+    if msg ~= "" then
+        ConsoleLib.info(msg)
         TextBox.Text = ""
     end
 end)
 
--- TOGGLE BUTTON (movable)
+-- TOGGLE BUTTON
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = ConsoleLib.config.ButtonSize
 ToggleButton.Position = ConsoleLib.config.ButtonPosition
-ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
+ToggleButton.AnchorPoint = Vector2.new(0.5,0.5)
 ToggleButton.BackgroundColor3 = ConsoleLib.config.AccentColor
-ToggleButton.TextColor3 = Color3.new(1, 1, 1)
+ToggleButton.TextColor3 = Color3.new(1,1,1)
 ToggleButton.Text = "Console"
 ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 18
+ToggleButton.TextSize = 16
 ToggleButton.Parent = ScreenGui
 
--- Make toggle button draggable
 if ConsoleLib.config.Draggable then
     makeDraggable(ToggleButton)
 end
@@ -180,53 +177,47 @@ ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = ConsoleLib.Visible
 end)
 
--- FUNCTION TO ADD LINE
+-- ADD LINE
 function ConsoleLib.addLine(text, type_)
     type_ = type_ or "INFO"
     local line = Instance.new("TextLabel")
-    line.Size = UDim2.new(1, -10, 0, 20)
+    line.Size = UDim2.new(1,-10,0,18)
     line.BackgroundTransparency = 1
     line.TextXAlignment = Enum.TextXAlignment.Left
     line.TextYAlignment = Enum.TextYAlignment.Top
     line.Font = Enum.Font.Gotham
-    line.TextSize = 16
+    line.TextSize = 14
     line.Text = string.format("[%s] %s", type_, text)
-
     if type_ == "ERROR" then
-        line.TextColor3 = Color3.fromRGB(255, 0, 0)
+        line.TextColor3 = Color3.fromRGB(255,0,0)
     elseif type_ == "WARN" then
-        line.TextColor3 = Color3.fromRGB(255, 170, 0)
+        line.TextColor3 = Color3.fromRGB(255,170,0)
     else
         line.TextColor3 = ConsoleLib.config.TextColor
     end
-
     line.Parent = ScrollingFrame
     table.insert(ConsoleLib._lines, line)
-
     if #ConsoleLib._lines > ConsoleLib.config.MaxLines then
         ConsoleLib._lines[1]:Destroy()
-        table.remove(ConsoleLib._lines, 1)
+        table.remove(ConsoleLib._lines,1)
     end
-
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
-    ScrollingFrame.CanvasPosition = Vector2.new(0, UIListLayout.AbsoluteContentSize.Y)
+    ScrollingFrame.CanvasSize = UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y)
+    ScrollingFrame.CanvasPosition = Vector2.new(0,UIListLayout.AbsoluteContentSize.Y)
 end
 
 -- SHORTCUTS
-function ConsoleLib.info(text) ConsoleLib.addLine(text, "INFO") end
-function ConsoleLib.warn(text) ConsoleLib.addLine(text, "WARN") end
-function ConsoleLib.error(text) ConsoleLib.addLine(text, "ERROR") end
+function ConsoleLib.info(text) ConsoleLib.addLine(text,"INFO") end
+function ConsoleLib.warn(text) ConsoleLib.addLine(text,"WARN") end
+function ConsoleLib.error(text) ConsoleLib.addLine(text,"ERROR") end
 
 -- SAFE CALL
-function ConsoleLib.safeCall(func, ...)
-    local success, err = pcall(func, ...)
-    if not success then
-        ConsoleLib.error(err)
-    end
+function ConsoleLib.safeCall(func,...)
+    local success, err = pcall(func,...)
+    if not success then ConsoleLib.error(err) end
     return success, err
 end
 
--- MANUAL TOGGLE FUNCTION
+-- MANUAL TOGGLE
 function ConsoleLib.toggle()
     ConsoleLib.Visible = not ConsoleLib.Visible
     MainFrame.Visible = ConsoleLib.Visible
