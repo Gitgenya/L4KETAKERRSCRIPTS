@@ -1,6 +1,6 @@
 local ConsoleLib = {}
 
--- CONFIG
+-- CONFIGURATION
 ConsoleLib.config = {
     Width = 600,
     Height = 300,
@@ -9,7 +9,8 @@ ConsoleLib.config = {
     AccentColor = Color3.fromRGB(0, 170, 255),
     TextColor = Color3.fromRGB(255, 255, 255),
     ButtonSize = UDim2.new(0, 120, 0, 40),
-    ButtonPosition = UDim2.new(0.9, -60, 0.95, -20) -- bottom-right
+    ButtonPosition = UDim2.new(0.9, -60, 0.95, -20), -- bottom-right
+    Draggable = true,
 }
 
 -- STORAGE
@@ -26,23 +27,55 @@ ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
-MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width/2, 0.7, -ConsoleLib.config.Height/2)
+MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width / 2, 0.7, -ConsoleLib.config.Height / 2)
 MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
 MainFrame.BorderSizePixel = 0
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Visible = false
 MainFrame.Active = true
-MainFrame.Draggable = true
+MainFrame.Draggable = ConsoleLib.config.Draggable
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 
+-- TOPBAR
+local Topbar = Instance.new("Frame")
+Topbar.Size = UDim2.new(1, 0, 0, 30)
+Topbar.BackgroundColor3 = ConsoleLib.config.AccentColor
+Topbar.BorderSizePixel = 0
+Topbar.Parent = MainFrame
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -40, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Console"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 18
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = Topbar
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -30, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 18
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = Topbar
+
+CloseButton.MouseButton1Click:Connect(function()
+    ConsoleLib.Visible = false
+    MainFrame.Visible = false
+end)
+
 -- SCROLLING FRAME
 local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size = UDim2.new(1, -10, 1, -10)
-ScrollingFrame.Position = UDim2.new(0, 5, 0, 5)
+ScrollingFrame.Size = UDim2.new(1, -10, 1, -40)
+ScrollingFrame.Position = UDim2.new(0, 5, 0, 35)
 ScrollingFrame.BackgroundTransparency = 1
 ScrollingFrame.BorderSizePixel = 0
-ScrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 ScrollingFrame.ScrollBarThickness = 6
 ScrollingFrame.Parent = MainFrame
 
@@ -57,7 +90,7 @@ ToggleButton.Size = ConsoleLib.config.ButtonSize
 ToggleButton.Position = ConsoleLib.config.ButtonPosition
 ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
 ToggleButton.BackgroundColor3 = ConsoleLib.config.AccentColor
-ToggleButton.TextColor3 = Color3.new(1,1,1)
+ToggleButton.TextColor3 = Color3.new(1, 1, 1)
 ToggleButton.Text = "Console"
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.TextSize = 18
@@ -79,7 +112,7 @@ function ConsoleLib.addLine(text, type_)
     line.Font = Enum.Font.Gotham
     line.TextSize = 16
     line.Text = string.format("[%s] %s", type_, text)
-    
+
     if type_ == "ERROR" then
         line.TextColor3 = Color3.fromRGB(255, 0, 0)
     elseif type_ == "WARN" then
@@ -90,13 +123,13 @@ function ConsoleLib.addLine(text, type_)
 
     line.Parent = ScrollingFrame
     table.insert(ConsoleLib._lines, line)
-    
+
     if #ConsoleLib._lines > ConsoleLib.config.MaxLines then
         ConsoleLib._lines[1]:Destroy()
         table.remove(ConsoleLib._lines, 1)
     end
 
-    ScrollingFrame.CanvasSize = UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
     ScrollingFrame.CanvasPosition = Vector2.new(0, UIListLayout.AbsoluteContentSize.Y)
 end
 
@@ -121,4 +154,3 @@ function ConsoleLib.toggle()
 end
 
 return ConsoleLib
-
