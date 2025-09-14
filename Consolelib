@@ -1,20 +1,18 @@
 local ConsoleLib = {}
 
--- CONFIG
+-- CONFIG (CMD STYLE)
 ConsoleLib.config = {
-    Width = 480,
-    Height = 360,
-    MaxLines = 200,
-    BackgroundColor = Color3.fromRGB(30,30,30),
-    LightBackground = Color3.fromRGB(245,245,245),
-    TopbarColor = Color3.fromRGB(25,25,25),
-    AccentColor = Color3.fromRGB(147,112,219),
-    ButtonColor = Color3.fromRGB(147,112,219),
-    TextColor = Color3.fromRGB(240,240,240),
+    Width = 640,
+    Height = 400,
+    MaxLines = 300,
+    BackgroundColor = Color3.fromRGB(0,0,0), -- pure black
+    TopbarColor = Color3.fromRGB(0,0,0), -- same as bg
+    AccentColor = Color3.fromRGB(64,64,64), -- dark gray
+    ButtonColor = Color3.fromRGB(64,64,64),
+    TextColor = Color3.fromRGB(255,255,255), -- white text
     Draggable = true,
-    Font = Enum.Font.Gotham,
+    Font = Enum.Font.Code, -- monospace font
     Timestamp = true,
-    LightMode = false,
     Resizable = true
 }
 
@@ -25,9 +23,8 @@ local CurrentType = "INFO"
 
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
--- DRAG
+-- DRAG FUNCTION
 local function makeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     local function update(input)
@@ -57,7 +54,7 @@ local function makeDraggable(frame)
     end)
 end
 
--- GUI
+-- GUI BASE
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ConsoleLibGUI"
 ScreenGui.ResetOnSpawn=false
@@ -69,23 +66,18 @@ MainFrame.Position=UDim2.new(0.5,-ConsoleLib.config.Width/2,0.5,-ConsoleLib.conf
 MainFrame.BackgroundColor3=ConsoleLib.config.BackgroundColor
 MainFrame.AnchorPoint=Vector2.new(0.5,0.5)
 MainFrame.Visible=false
-MainFrame.ClipsDescendants=true
+MainFrame.BorderSizePixel=1
+MainFrame.BorderColor3=Color3.fromRGB(128,128,128)
 MainFrame.Parent=ScreenGui
-local UICornerMain = Instance.new("UICorner")
-UICornerMain.CornerRadius=UDim.new(0,10)
-UICornerMain.Parent=MainFrame
 if ConsoleLib.config.Draggable then makeDraggable(MainFrame) end
 
 -- RESIZE HANDLE
 local ResizeHandle = Instance.new("Frame")
-ResizeHandle.Size=UDim2.new(0,16,0,16)
-ResizeHandle.Position=UDim2.new(1, -16,1, -16)
-ResizeHandle.BackgroundColor3=ConsoleLib.config.ButtonColor
-ResizeHandle.AnchorPoint=Vector2.new(0,0)
+ResizeHandle.Size=UDim2.new(0,12,0,12)
+ResizeHandle.Position=UDim2.new(1,-12,1,-12)
+ResizeHandle.BackgroundColor3=Color3.fromRGB(128,128,128)
+ResizeHandle.BorderSizePixel=0
 ResizeHandle.Parent=MainFrame
-local UICornerResize = Instance.new("UICorner")
-UICornerResize.CornerRadius=UDim.new(0,4)
-UICornerResize.Parent=ResizeHandle
 ResizeHandle.Visible = ConsoleLib.config.Resizable
 
 local resizing=false
@@ -99,168 +91,97 @@ ResizeHandle.InputBegan:Connect(function(input)
 end)
 UserInputService.InputChanged:Connect(function(input)
     if resizing and input.UserInputType==Enum.UserInputType.MouseMovement then
-        local newW = math.clamp(input.Position.X - MainFrame.AbsolutePosition.X,300,800)
+        local newW = math.clamp(input.Position.X - MainFrame.AbsolutePosition.X,300,900)
         local newH = math.clamp(input.Position.Y - MainFrame.AbsolutePosition.Y,200,600)
         MainFrame.Size = UDim2.new(0,newW,0,newH)
     end
 end)
 
--- TOPBAR
+-- TITLE BAR (fake CMD title bar)
 local Topbar = Instance.new("Frame")
-Topbar.Size=UDim2.new(1,0,0,36)
+Topbar.Size=UDim2.new(1,0,0,24)
 Topbar.BackgroundColor3=ConsoleLib.config.TopbarColor
 Topbar.BorderSizePixel=0
 Topbar.Parent=MainFrame
+
 local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size=UDim2.new(1,-40,1,0)
-TitleLabel.Position=UDim2.new(0,10,0,0)
+TitleLabel.Size=UDim2.new(1,-4,1,0)
+TitleLabel.Position=UDim2.new(0,4,0,0)
 TitleLabel.BackgroundTransparency=1
-TitleLabel.Text="ConsoleLib"
-TitleLabel.TextColor3=ConsoleLib.config.TextColor
-TitleLabel.TextSize=18
-TitleLabel.TextXAlignment=Enum.TextXAlignment.Left
+TitleLabel.Text="C:\\Windows\\System32\\cmd.exe"
+TitleLabel.TextColor3=Color3.fromRGB(255,255,255)
+TitleLabel.TextSize=14
 TitleLabel.Font=ConsoleLib.config.Font
+TitleLabel.TextXAlignment=Enum.TextXAlignment.Left
 TitleLabel.Parent=Topbar
 
 -- CLOSE BUTTON
 local CloseButton = Instance.new("TextButton")
-CloseButton.Size=UDim2.new(0,36,0,36)
-CloseButton.Position=UDim2.new(1,-36,0,0)
-CloseButton.BackgroundColor3=Color3.fromRGB(200,0,0)
+CloseButton.Size=UDim2.new(0,40,1,0)
+CloseButton.Position=UDim2.new(1,-40,0,0)
+CloseButton.BackgroundColor3=Color3.fromRGB(128,0,0)
 CloseButton.Text="X"
 CloseButton.TextColor3=Color3.fromRGB(255,255,255)
-CloseButton.Font=Enum.Font.GothamBold
-CloseButton.TextSize=18
+CloseButton.Font=Enum.Font.Code
+CloseButton.TextSize=14
 CloseButton.Parent=Topbar
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius=UDim.new(0,6)
-CloseCorner.Parent=CloseButton
-CloseButton.MouseEnter:Connect(function() CloseButton.BackgroundColor3=Color3.fromRGB(255,50,50) end)
-CloseButton.MouseLeave:Connect(function() CloseButton.BackgroundColor3=Color3.fromRGB(200,0,0) end)
 CloseButton.MouseButton1Click:Connect(function()
     ConsoleLib.Visible=false
     MainFrame.Visible=false
 end)
 
--- TABS
-local TabFrame = Instance.new("Frame")
-TabFrame.Size=UDim2.new(1,-12,0,28)
-TabFrame.Position=UDim2.new(0,6,0,38)
-TabFrame.BackgroundTransparency=1
-TabFrame.Parent=MainFrame
-
-local function createTab(name)
-    local btn = Instance.new("TextButton")
-    btn.Size=UDim2.new(0,120,0,28)
-    btn.Position=UDim2.new(0,#TabFrame:GetChildren()*124,0,0)
-    btn.BackgroundColor3=ConsoleLib.config.AccentColor
-    btn.TextColor3=Color3.fromRGB(255,255,255)
-    btn.Text=name
-    btn.Font=Enum.Font.GothamBold
-    btn.TextSize=16
-    btn.Parent=TabFrame
-    local uic = Instance.new("UICorner")
-    uic.CornerRadius=UDim.new(0,6)
-    uic.Parent=btn
-    return btn
-end
-
-local ConsoleTab = createTab("Console")
-local SettingsTab = createTab("Settings")
-local DebugTab = createTab("Debug")
-
--- CONTAINER FRAME
-local ContainerFrame = Instance.new("Frame")
-ContainerFrame.Size=UDim2.new(1,-12,1,-80)
-ContainerFrame.Position=UDim2.new(0,6,0,72)
-ContainerFrame.BackgroundTransparency=1
-ContainerFrame.Parent=MainFrame
-
-local ConsoleContainer = Instance.new("Frame")
-ConsoleContainer.Size=UDim2.new(1,0,1,0)
-ConsoleContainer.BackgroundTransparency=1
-ConsoleContainer.Parent=ContainerFrame
-
-local SettingsContainer = Instance.new("Frame")
-SettingsContainer.Size=UDim2.new(1,0,1,0)
-SettingsContainer.BackgroundTransparency=1
-SettingsContainer.Visible=false
-SettingsContainer.Parent=ContainerFrame
-
-local DebugContainer = Instance.new("Frame")
-DebugContainer.Size=UDim2.new(1,0,1,0)
-DebugContainer.BackgroundTransparency=1
-DebugContainer.Visible=false
-DebugContainer.Parent=ContainerFrame
-
--- SCROLLING FRAME (CONSOLE)
+-- SCROLLING OUTPUT
 local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size=UDim2.new(1,-12,1,-60)
-ScrollingFrame.Position=UDim2.new(0,6,0,0)
+ScrollingFrame.Size=UDim2.new(1,-6,1,-36)
+ScrollingFrame.Position=UDim2.new(0,3,0,24)
 ScrollingFrame.BackgroundTransparency=1
 ScrollingFrame.BorderSizePixel=0
 ScrollingFrame.ScrollBarThickness=6
-ScrollingFrame.Parent=ConsoleContainer
+ScrollingFrame.TopImage=""
+ScrollingFrame.BottomImage=""
+ScrollingFrame.Parent=MainFrame
+
 local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Padding=UDim.new(0,2)
+UIListLayout.Padding=UDim.new(0,1)
 UIListLayout.SortOrder=Enum.SortOrder.LayoutOrder
 UIListLayout.Parent=ScrollingFrame
-local UIPaddingLines = Instance.new("UIPadding")
-UIPaddingLines.PaddingLeft=UDim.new(0,6)
-UIPaddingLines.PaddingRight=UDim.new(0,6)
-UIPaddingLines.Parent=ScrollingFrame
 
--- INPUT FRAME
-local InputFrame = Instance.new("Frame")
-InputFrame.Size=UDim2.new(1,0,0,36)
-InputFrame.Position=UDim2.new(0,0,1,-36)
-InputFrame.AnchorPoint=Vector2.new(0,0)
-InputFrame.BackgroundTransparency=1
-InputFrame.Parent=ConsoleContainer
+-- INPUT BAR
+local InputBox = Instance.new("TextBox")
+InputBox.Size=UDim2.new(1,-6,0,20)
+InputBox.Position=UDim2.new(0,3,1,-22)
+InputBox.BackgroundColor3=Color3.fromRGB(0,0,0)
+InputBox.TextColor3=Color3.fromRGB(255,255,255)
+InputBox.ClearTextOnFocus=false
+InputBox.Font=Enum.Font.Code
+InputBox.TextSize=14
+InputBox.BorderSizePixel=0
+InputBox.PlaceholderText=""
+InputBox.Text=""
+InputBox.Parent=MainFrame
 
--- TEXTBOX
-local TextBox = Instance.new("TextBox")
-TextBox.Size=UDim2.new(1,-100,1,0)
-TextBox.Position=UDim2.new(0,0,0,0)
-TextBox.BackgroundColor3=Color3.fromRGB(40,40,40)
-TextBox.TextColor3=ConsoleLib.config.TextColor
-TextBox.PlaceholderText="Type a message..."
-TextBox.ClearTextOnFocus=false
-TextBox.Font=ConsoleLib.config.Font
-TextBox.TextSize=16
-TextBox.Parent=InputFrame
-
--- SEND BUTTON
-local SendButton = Instance.new("TextButton")
-SendButton.Size=UDim2.new(0,96,1,0)
-SendButton.Position=UDim2.new(1,-96,0,0)
-SendButton.BackgroundColor3=ConsoleLib.config.ButtonColor
-SendButton.TextColor3=Color3.fromRGB(255,255,255)
-SendButton.Text="Send"
-SendButton.Font=Enum.Font.GothamBold
-SendButton.TextSize=16
-SendButton.Parent=InputFrame
-local UICornerSend = Instance.new("UICorner")
-UICornerSend.CornerRadius=UDim.new(0,6)
-UICornerSend.Parent=SendButton
-
--- LOG COLORS & BOLD
-local LogColors = {INFO=Color3.fromRGB(255,255,255),ERROR=Color3.fromRGB(255,85,0),WARN=Color3.fromRGB(255,0,0),OUTPUT=Color3.fromRGB(0,170,255)}
-local LogBold = {ERROR=true, WARN=true, OUTPUT=true}
+-- LOG COLORS (CMD vibes)
+local LogColors = {
+    INFO   = Color3.fromRGB(255,255,255), -- white
+    ERROR  = Color3.fromRGB(255,0,0),     -- red
+    WARN   = Color3.fromRGB(255,255,0),   -- yellow
+    OUTPUT = Color3.fromRGB(0,255,0)      -- green
+}
+local LogBold = {ERROR=true, WARN=true}
 
 -- ADD LINE
 function ConsoleLib.addLine(text,type_)
     type_ = type_ or "INFO"
     local line = Instance.new("TextLabel")
-    line.Size=UDim2.new(1,-12,0,20)
+    line.Size=UDim2.new(1,-6,0,18)
     line.BackgroundTransparency=1
     line.TextXAlignment=Enum.TextXAlignment.Left
     line.TextYAlignment=Enum.TextYAlignment.Top
-    line.Font = LogBold[type_] and Enum.Font.GothamBold or ConsoleLib.config.Font
-    line.TextSize=16
+    line.Font = ConsoleLib.config.Font
+    line.TextSize=14
     line.TextColor3 = LogColors[type_] or ConsoleLib.config.TextColor
     local ts = ConsoleLib.config.Timestamp and os.date("[%H:%M:%S] ") or ""
-    line.Text=string.format("%s[%s] %s",ts,type_,text)
+    line.Text=ts..text
     line.Parent=ScrollingFrame
     table.insert(ConsoleLib._lines,line)
     if #ConsoleLib._lines>ConsoleLib.config.MaxLines then
@@ -277,51 +198,26 @@ function ConsoleLib.warn(text) ConsoleLib.addLine(text,"WARN") end
 function ConsoleLib.error(text) ConsoleLib.addLine(text,"ERROR") end
 function ConsoleLib.output(text) ConsoleLib.addLine(text,"OUTPUT") end
 
--- SEND BUTTON LOGIC
-SendButton.MouseButton1Click:Connect(function()
-    local msg = TextBox.Text
-    if msg~="" then
-        ConsoleLib.addLine(msg,CurrentType)
-        TextBox.Text=""
+-- ENTER INPUT
+InputBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local cmd = InputBox.Text
+        if cmd~="" then
+            ConsoleLib.addLine("C:\\> "..cmd,"INFO")
+            InputBox.Text=""
+            -- fake response
+            if cmd=="help" then
+                ConsoleLib.output("Available commands: help, echo, cls")
+            elseif cmd:sub(1,4)=="echo" then
+                ConsoleLib.info(cmd:sub(6))
+            elseif cmd=="cls" then
+                for _,v in pairs(ConsoleLib._lines) do v:Destroy() end
+                ConsoleLib._lines = {}
+            else
+                ConsoleLib.error("'"..cmd.."' is not recognized as an internal command")
+            end
+        end
     end
 end)
-
--- TAB SWITCHING
-local tabContainers = {ConsoleContainer, SettingsContainer, DebugContainer}
-for i,tabBtn in pairs({ConsoleTab, SettingsTab, DebugTab}) do
-    tabBtn.MouseButton1Click:Connect(function()
-        for _,v in pairs(tabContainers) do v.Visible=false end
-        tabContainers[i].Visible=true
-    end)
-end
-
--- DEBUG TAB BUTTONS
-local function createDebugButton(name,link,y)
-    local btn=Instance.new("TextButton")
-    btn.Size=UDim2.new(0,160,0,36)
-    btn.Position=UDim2.new(0,10,0,y)
-    btn.BackgroundColor3=ConsoleLib.config.ButtonColor
-    btn.TextColor3=Color3.fromRGB(255,255,255)
-    btn.Text=name
-    btn.Font=Enum.Font.GothamBold
-    btn.TextSize=16
-    btn.Parent=DebugContainer
-    local uic=Instance.new("UICorner")
-    uic.CornerRadius=UDim.new(0,6)
-    uic.Parent=btn
-    btn.MouseButton1Click:Connect(function()
-        local success,err=pcall(function()
-            loadstring(game:HttpGet(link))()
-        end)
-        if not success then
-            ConsoleLib.error("Failed to load "..name..": "..tostring(err))
-        else
-            ConsoleLib.output(name.." loaded successfully! 🐐")
-        end
-    end)
-end
-
-createDebugButton("InfYield","https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source",10)
-createDebugButton("SimpleSpy","https://raw.githubusercontent.com/infyiff/backup/main/SimpleSpyV3/main.lua",56)
 
 return ConsoleLib
