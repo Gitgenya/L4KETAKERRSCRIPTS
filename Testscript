@@ -1,4 +1,4 @@
 -- Tiny ConsoleLib Loader for Delta
 local ConsoleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib"))()
 local console = ConsoleLib:Create()
-console:Output("ConsoleLib loaded! 🐐")
+console:Output("ConsoleLib loaded! xsx🐐")
