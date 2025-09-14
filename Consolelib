@@ -1,26 +1,22 @@
 local ConsoleLib = {}
 
--- CONFIG (CMD STYLE)
+-- CONFIG
 ConsoleLib.config = {
     Width = 640,
     Height = 400,
     MaxLines = 300,
-    BackgroundColor = Color3.fromRGB(0,0,0), -- pure black
-    TopbarColor = Color3.fromRGB(0,0,0), -- same as bg
-    AccentColor = Color3.fromRGB(64,64,64), -- dark gray
-    ButtonColor = Color3.fromRGB(64,64,64),
-    TextColor = Color3.fromRGB(255,255,255), -- white text
+    BackgroundColor = Color3.fromRGB(0,0,0),
+    TextColor = Color3.fromRGB(255,255,255),
+    AccentColor = Color3.fromRGB(64,64,64),
     Draggable = true,
-    Font = Enum.Font.Code, -- monospace font
-    Timestamp = true,
-    Resizable = true
+    Resizable = true,
+    Font = Enum.Font.Code,
+    Timestamp = true
 }
 
 -- STORAGE
 ConsoleLib._lines = {}
-ConsoleLib.Visible = false
-local CurrentType = "INFO"
-
+ConsoleLib.commands = {}
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 
@@ -57,165 +53,126 @@ end
 -- GUI BASE
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ConsoleLibGUI"
-ScreenGui.ResetOnSpawn=false
-ScreenGui.Parent=PlayerGui
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size=UDim2.new(0,ConsoleLib.config.Width,0,ConsoleLib.config.Height)
-MainFrame.Position=UDim2.new(0.5,-ConsoleLib.config.Width/2,0.5,-ConsoleLib.config.Height/2)
-MainFrame.BackgroundColor3=ConsoleLib.config.BackgroundColor
-MainFrame.AnchorPoint=Vector2.new(0.5,0.5)
-MainFrame.Visible=false
-MainFrame.BorderSizePixel=1
-MainFrame.BorderColor3=Color3.fromRGB(128,128,128)
-MainFrame.Parent=ScreenGui
+MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
+MainFrame.Position = UDim2.new(0.5, -ConsoleLib.config.Width/2, 0.5, -ConsoleLib.config.Height/2)
+MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Visible = true
+MainFrame.BorderSizePixel = 1
+MainFrame.BorderColor3 = Color3.fromRGB(128,128,128)
+MainFrame.Parent = ScreenGui
+
 if ConsoleLib.config.Draggable then makeDraggable(MainFrame) end
 
 -- RESIZE HANDLE
-local ResizeHandle = Instance.new("Frame")
-ResizeHandle.Size=UDim2.new(0,12,0,12)
-ResizeHandle.Position=UDim2.new(1,-12,1,-12)
-ResizeHandle.BackgroundColor3=Color3.fromRGB(128,128,128)
-ResizeHandle.BorderSizePixel=0
-ResizeHandle.Parent=MainFrame
-ResizeHandle.Visible = ConsoleLib.config.Resizable
+if ConsoleLib.config.Resizable then
+    local ResizeHandle = Instance.new("Frame")
+    ResizeHandle.Size = UDim2.new(0,12,0,12)
+    ResizeHandle.Position = UDim2.new(1,-12,1,-12)
+    ResizeHandle.BackgroundColor3 = Color3.fromRGB(128,128,128)
+    ResizeHandle.BorderSizePixel = 0
+    ResizeHandle.Parent = MainFrame
 
-local resizing=false
-ResizeHandle.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        resizing=true
-        input.Changed:Connect(function()
-            if input.UserInputState==Enum.UserInputState.End then resizing=false end
-        end)
-    end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if resizing and input.UserInputType==Enum.UserInputType.MouseMovement then
-        local newW = math.clamp(input.Position.X - MainFrame.AbsolutePosition.X,300,900)
-        local newH = math.clamp(input.Position.Y - MainFrame.AbsolutePosition.Y,200,600)
-        MainFrame.Size = UDim2.new(0,newW,0,newH)
-    end
-end)
-
--- TITLE BAR (fake CMD title bar)
-local Topbar = Instance.new("Frame")
-Topbar.Size=UDim2.new(1,0,0,24)
-Topbar.BackgroundColor3=ConsoleLib.config.TopbarColor
-Topbar.BorderSizePixel=0
-Topbar.Parent=MainFrame
-
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size=UDim2.new(1,-4,1,0)
-TitleLabel.Position=UDim2.new(0,4,0,0)
-TitleLabel.BackgroundTransparency=1
-TitleLabel.Text="C:\\Windows\\System32\\cmd.exe"
-TitleLabel.TextColor3=Color3.fromRGB(255,255,255)
-TitleLabel.TextSize=14
-TitleLabel.Font=ConsoleLib.config.Font
-TitleLabel.TextXAlignment=Enum.TextXAlignment.Left
-TitleLabel.Parent=Topbar
-
--- CLOSE BUTTON
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size=UDim2.new(0,40,1,0)
-CloseButton.Position=UDim2.new(1,-40,0,0)
-CloseButton.BackgroundColor3=Color3.fromRGB(128,0,0)
-CloseButton.Text="X"
-CloseButton.TextColor3=Color3.fromRGB(255,255,255)
-CloseButton.Font=Enum.Font.Code
-CloseButton.TextSize=14
-CloseButton.Parent=Topbar
-CloseButton.MouseButton1Click:Connect(function()
-    ConsoleLib.Visible=false
-    MainFrame.Visible=false
-end)
-
--- SCROLLING OUTPUT
-local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size=UDim2.new(1,-6,1,-36)
-ScrollingFrame.Position=UDim2.new(0,3,0,24)
-ScrollingFrame.BackgroundTransparency=1
-ScrollingFrame.BorderSizePixel=0
-ScrollingFrame.ScrollBarThickness=6
-ScrollingFrame.TopImage=""
-ScrollingFrame.BottomImage=""
-ScrollingFrame.Parent=MainFrame
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Padding=UDim.new(0,1)
-UIListLayout.SortOrder=Enum.SortOrder.LayoutOrder
-UIListLayout.Parent=ScrollingFrame
-
--- INPUT BAR
-local InputBox = Instance.new("TextBox")
-InputBox.Size=UDim2.new(1,-6,0,20)
-InputBox.Position=UDim2.new(0,3,1,-22)
-InputBox.BackgroundColor3=Color3.fromRGB(0,0,0)
-InputBox.TextColor3=Color3.fromRGB(255,255,255)
-InputBox.ClearTextOnFocus=false
-InputBox.Font=Enum.Font.Code
-InputBox.TextSize=14
-InputBox.BorderSizePixel=0
-InputBox.PlaceholderText=""
-InputBox.Text=""
-InputBox.Parent=MainFrame
-
--- LOG COLORS (CMD vibes)
-local LogColors = {
-    INFO   = Color3.fromRGB(255,255,255), -- white
-    ERROR  = Color3.fromRGB(255,0,0),     -- red
-    WARN   = Color3.fromRGB(255,255,0),   -- yellow
-    OUTPUT = Color3.fromRGB(0,255,0)      -- green
-}
-local LogBold = {ERROR=true, WARN=true}
-
--- ADD LINE
-function ConsoleLib.addLine(text,type_)
-    type_ = type_ or "INFO"
-    local line = Instance.new("TextLabel")
-    line.Size=UDim2.new(1,-6,0,18)
-    line.BackgroundTransparency=1
-    line.TextXAlignment=Enum.TextXAlignment.Left
-    line.TextYAlignment=Enum.TextYAlignment.Top
-    line.Font = ConsoleLib.config.Font
-    line.TextSize=14
-    line.TextColor3 = LogColors[type_] or ConsoleLib.config.TextColor
-    local ts = ConsoleLib.config.Timestamp and os.date("[%H:%M:%S] ") or ""
-    line.Text=ts..text
-    line.Parent=ScrollingFrame
-    table.insert(ConsoleLib._lines,line)
-    if #ConsoleLib._lines>ConsoleLib.config.MaxLines then
-        ConsoleLib._lines[1]:Destroy()
-        table.remove(ConsoleLib._lines,1)
-    end
-    ScrollingFrame.CanvasSize=UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y)
-    ScrollingFrame.CanvasPosition=Vector2.new(0,UIListLayout.AbsoluteContentSize.Y)
+    local resizing = false
+    ResizeHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            resizing = true
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then resizing = false end
+            end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local newW = math.clamp(input.Position.X - MainFrame.AbsolutePosition.X,300,900)
+            local newH = math.clamp(input.Position.Y - MainFrame.AbsolutePosition.Y,200,600)
+            MainFrame.Size = UDim2.new(0,newW,0,newH)
+        end
+    end)
 end
 
--- SHORTCUTS
-function ConsoleLib.info(text) ConsoleLib.addLine(text,"INFO") end
-function ConsoleLib.warn(text) ConsoleLib.addLine(text,"WARN") end
-function ConsoleLib.error(text) ConsoleLib.addLine(text,"ERROR") end
-function ConsoleLib.output(text) ConsoleLib.addLine(text,"OUTPUT") end
+-- SCROLLING FRAME
+local ScrollingFrame = Instance.new("ScrollingFrame")
+ScrollingFrame.Size = UDim2.new(1,-6,1,-26)
+ScrollingFrame.Position = UDim2.new(0,3,0,3)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.ScrollBarThickness = 6
+ScrollingFrame.Parent = MainFrame
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Padding = UDim.new(0,1)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Parent = ScrollingFrame
+
+-- INPUT BOX
+local InputBox = Instance.new("TextBox")
+InputBox.Size = UDim2.new(1,-6,0,20)
+InputBox.Position = UDim2.new(0,3,1,-22)
+InputBox.BackgroundColor3 = Color3.fromRGB(0,0,0)
+InputBox.TextColor3 = ConsoleLib.config.TextColor
+InputBox.ClearTextOnFocus = false
+InputBox.Font = ConsoleLib.config.Font
+InputBox.TextSize = 14
+InputBox.BorderSizePixel = 0
+InputBox.PlaceholderText = "C:\\>"
+InputBox.Parent = MainFrame
+
+-- ADD LINE FUNCTION
+function ConsoleLib.addLine(text)
+    local line = Instance.new("TextLabel")
+    line.Size = UDim2.new(1,-6,0,18)
+    line.BackgroundTransparency = 1
+    line.TextXAlignment = Enum.TextXAlignment.Left
+    line.TextYAlignment = Enum.TextYAlignment.Top
+    line.Font = ConsoleLib.config.Font
+    line.TextSize = 14
+    line.TextColor3 = ConsoleLib.config.TextColor
+    local ts = ConsoleLib.config.Timestamp and os.date("[%H:%M:%S] ") or ""
+    line.Text = ts..text
+    line.Parent = ScrollingFrame
+    table.insert(ConsoleLib._lines, line)
+    if #ConsoleLib._lines > ConsoleLib.config.MaxLines then
+        ConsoleLib._lines[1]:Destroy()
+        table.remove(ConsoleLib._lines, 1)
+    end
+    ScrollingFrame.CanvasSize = UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y)
+    ScrollingFrame.CanvasPosition = Vector2.new(0,UIListLayout.AbsoluteContentSize.Y)
+end
+
+-- COMMAND REGISTRATION
+function ConsoleLib.registerCommand(name, func)
+    ConsoleLib.commands[name] = func
+end
+
+-- RUN COMMAND (script-friendly)
+function ConsoleLib.runCommand(cmd)
+    local args = {}
+    for word in cmd:gmatch("%S+") do
+        table.insert(args, word)
+    end
+    local commandName = args[1]
+    table.remove(args,1)
+    local commandFunc = ConsoleLib.commands[commandName]
+    if commandFunc then
+        commandFunc(unpack(args))
+    else
+        ConsoleLib.addLine("Command not found: "..cmd)
+    end
+end
 
 -- ENTER INPUT
 InputBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
-        local cmd = InputBox.Text
-        if cmd~="" then
-            ConsoleLib.addLine("C:\\> "..cmd,"INFO")
-            InputBox.Text=""
-            -- fake response
-            if cmd=="help" then
-                ConsoleLib.output("Available commands: help, echo, cls")
-            elseif cmd:sub(1,4)=="echo" then
-                ConsoleLib.info(cmd:sub(6))
-            elseif cmd=="cls" then
-                for _,v in pairs(ConsoleLib._lines) do v:Destroy() end
-                ConsoleLib._lines = {}
-            else
-                ConsoleLib.error("'"..cmd.."' is not recognized as an internal command")
-            end
+        local text = InputBox.Text
+        if text ~= "" then
+            ConsoleLib.addLine("C:\\> "..text)
+            ConsoleLib.runCommand(text)
+            InputBox.Text = ""
         end
     end
 end)
