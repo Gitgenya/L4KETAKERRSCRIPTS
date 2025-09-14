@@ -1,121 +1,163 @@
--- PowerShell Style Console for Roblox
+-- CMD Style ConsoleLib (Module)
 local ConsoleLib = {}
 
 -- CONFIG
 ConsoleLib.config = {
     Width = 640,
     Height = 400,
-    MaxLines = 300,
-    BackgroundColor = Color3.fromRGB(0, 0, 0), -- Black bg
-    TextColor = Color3.fromRGB(230, 230, 230), -- White text (thin look)
-    Font = Enum.Font.Code, -- Monospace thin font
+    BackgroundColor = Color3.fromRGB(0, 0, 0),
+    TextColor = Color3.fromRGB(230, 230, 230),
+    Font = Enum.Font.Code,
     FontSize = Enum.FontSize.Size14,
-    Draggable = true,
-    Resizable = true,
+    FakePath = "C:\\Users\\Player"
 }
 
--- SERVICES
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-
--- GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PowerShellConsole"
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
-MainFrame.Position = UDim2.new(0.2, 0, 0.2, 0)
-MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
-MainFrame.BorderColor3 = Color3.fromRGB(45, 45, 45)
-MainFrame.BorderSizePixel = 1
-MainFrame.Parent = ScreenGui
-MainFrame.Active = true
-MainFrame.Draggable = ConsoleLib.config.Draggable
-
--- TITLE BAR
-local TitleBar = Instance.new("Frame")
-TitleBar.Size = UDim2.new(1, 0, 0, 25)
-TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = MainFrame
-
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, -50, 1, 0)
-TitleLabel.Position = UDim2.new(0, 5, 0, 0)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "Windows PowerShell"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.Font = ConsoleLib.config.Font
-TitleLabel.TextSize = 16
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Parent = TitleBar
-
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 40, 1, 0)
-CloseButton.Position = UDim2.new(1, -40, 0, 0)
-CloseButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-CloseButton.Text = "X"
-CloseButton.Font = ConsoleLib.config.Font
-CloseButton.TextSize = 16
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.Parent = TitleBar
-
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- SCROLLING CONSOLE
-local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size = UDim2.new(1, 0, 1, -25)
-ScrollingFrame.Position = UDim2.new(0, 0, 0, 25)
-ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.BorderSizePixel = 0
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-ScrollingFrame.ScrollBarThickness = 10
-ScrollingFrame.Parent = MainFrame
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = ScrollingFrame
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- COLORS FOR OUTPUT TYPES
+-- COLORS
 local Colors = {
-    Info = Color3.fromRGB(0, 200, 255),    -- Cyan
-    Warn = Color3.fromRGB(255, 255, 0),    -- Yellow
-    Error = Color3.fromRGB(255, 80, 80),   -- Red
-    Output = Color3.fromRGB(0, 180, 0),    -- Green
+    Info = Color3.fromRGB(200, 200, 200),   -- White
+    Warn = Color3.fromRGB(255, 255, 0),     -- Yellow
+    Error = Color3.fromRGB(255, 80, 80),    -- Red
+    Output = Color3.fromRGB(0, 200, 0),     -- Green
 }
 
--- TIMESTAMP FUNCTION
-local function getTime()
-    return os.date("%H:%M:%S")
+-- CREATE FUNCTION
+function ConsoleLib:Create()
+    local self = {}
+    
+    -- Services
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- Gui Setup
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "CMDConsole"
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, ConsoleLib.config.Width, 0, ConsoleLib.config.Height)
+    MainFrame.Position = UDim2.new(0.2, 0, 0.2, 0)
+    MainFrame.BackgroundColor3 = ConsoleLib.config.BackgroundColor
+    MainFrame.BorderColor3 = Color3.fromRGB(45, 45, 45)
+    MainFrame.BorderSizePixel = 1
+    MainFrame.Parent = ScreenGui
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+
+    -- Title Bar
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Size = UDim2.new(1, 0, 0, 25)
+    TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Parent = MainFrame
+
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, -50, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 5, 0, 0)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = "C:\\Windows\\System32\\cmd.exe"
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.Font = ConsoleLib.config.Font
+    TitleLabel.TextSize = 16
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = TitleBar
+
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Size = UDim2.new(0, 40, 1, 0)
+    CloseButton.Position = UDim2.new(1, -40, 0, 0)
+    CloseButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    CloseButton.Text = "X"
+    CloseButton.Font = ConsoleLib.config.Font
+    CloseButton.TextSize = 16
+    CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseButton.Parent = TitleBar
+
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    -- Console Scrolling
+    local ScrollingFrame = Instance.new("ScrollingFrame")
+    ScrollingFrame.Size = UDim2.new(1, 0, 1, -50)
+    ScrollingFrame.Position = UDim2.new(0, 0, 0, 25)
+    ScrollingFrame.BackgroundTransparency = 1
+    ScrollingFrame.BorderSizePixel = 0
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    ScrollingFrame.ScrollBarThickness = 10
+    ScrollingFrame.Parent = MainFrame
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = ScrollingFrame
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    -- Input Field
+    local InputBox = Instance.new("TextBox")
+    InputBox.Size = UDim2.new(1, -10, 0, 25)
+    InputBox.Position = UDim2.new(0, 5, 1, -25)
+    InputBox.BackgroundTransparency = 1
+    InputBox.TextXAlignment = Enum.TextXAlignment.Left
+    InputBox.Font = ConsoleLib.config.Font
+    InputBox.TextSize = 14
+    InputBox.TextColor3 = ConsoleLib.config.TextColor
+    InputBox.ClearTextOnFocus = false
+    InputBox.Text = ConsoleLib.config.FakePath .. ">"
+    InputBox.Parent = MainFrame
+
+    -- Internal AddMessage
+    local function AddMessage(msgType, text)
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -10, 0, 20)
+        Label.BackgroundTransparency = 1
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Font = ConsoleLib.config.Font
+        Label.TextSize = 14
+        Label.TextColor3 = Colors[msgType] or ConsoleLib.config.TextColor
+        Label.Text = text
+        Label.Parent = ScrollingFrame
+
+        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
+        ScrollingFrame.CanvasPosition = Vector2.new(0, math.max(0, ScrollingFrame.CanvasSize.Y.Offset - ScrollingFrame.AbsoluteSize.Y))
+    end
+
+    -- Input Handling
+    InputBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local fullText = InputBox.Text
+            local command = string.gsub(fullText, "^" .. ConsoleLib.config.FakePath .. ">", "")
+
+            if command and command ~= "" then
+                AddMessage("Info", ConsoleLib.config.FakePath .. ">" .. command)
+
+                if command:lower() == "help" then
+                    AddMessage("Output", "Supported commands: help, cls, echo <msg>")
+                elseif command:lower() == "cls" then
+                    for _, child in ipairs(ScrollingFrame:GetChildren()) do
+                        if child:IsA("TextLabel") then child:Destroy() end
+                    end
+                    ScrollingFrame.CanvasSize = UDim2.new()
+                elseif string.sub(command:lower(), 1, 4) == "echo" then
+                    AddMessage("Output", string.sub(command, 6))
+                else
+                    AddMessage("Error", "'" .. command .. "' is not recognized as an internal or external command")
+                end
+            end
+
+            InputBox.Text = ConsoleLib.config.FakePath .. ">"
+            InputBox.CursorPosition = #InputBox.Text + 1
+        end
+    end)
+
+    -- Public API
+    function self:Output(text) AddMessage("Output", text) end
+    function self:Info(text) AddMessage("Info", text) end
+    function self:Warn(text) AddMessage("Warn", text) end
+    function self:Error(text) AddMessage("Error", text) end
+
+    -- Intro
+    AddMessage("Output", "Microsoft Windows [Version 10.0.19045.5011]")
+    AddMessage("Output", "(c) Microsoft Corporation. All rights reserved.")
+    AddMessage("Info", ConsoleLib.config.FakePath .. ">")
+
+    return self
 end
-
--- ADD MESSAGE FUNCTION
-function ConsoleLib:AddMessage(msgType, text)
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(1, -10, 0, 20)
-    Label.BackgroundTransparency = 1
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Font = ConsoleLib.config.Font
-    Label.TextSize = 14
-    Label.TextColor3 = Colors[msgType] or ConsoleLib.config.TextColor
-    Label.Text = string.format("[%s] %s: %s", getTime(), msgType:upper(), text)
-    Label.Parent = ScrollingFrame
-
-    -- Update scroll size
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
-    ScrollingFrame.CanvasPosition = Vector2.new(0, math.max(0, ScrollingFrame.CanvasSize.Y.Offset - ScrollingFrame.AbsoluteSize.Y))
-end
-
--- TEST MESSAGES
-task.wait(1)
-ConsoleLib:AddMessage("Info", "PowerShell UI Initialized")
-ConsoleLib:AddMessage("Output", "Hello World printed")
-ConsoleLib:AddMessage("Warn", "This is a warning example")
-ConsoleLib:AddMessage("Error", "This is an error example")
 
 return ConsoleLib
