@@ -97,7 +97,7 @@ function ConsoleLib:Create()
     Input.Font = self.config.Font
     Input.TextSize = 14
     Input.Text = ""
-    Input.PlaceholderText = "Type command..."
+    Input.PlaceholderText = "Input..."
     Input.Parent = Frame
 
     local console = setmetatable({
