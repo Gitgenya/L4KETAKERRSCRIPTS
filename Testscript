@@ -1,63 +1,34 @@
--- Loader for ConsoleLib with Roblox commands
+-- Load Rayfield (from Sirius, no inspection)
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+-- Create ConsoleLib purely for output
 local ConsoleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib"))()
-local console = ConsoleLib:Create() -- build GUI
-console.Frame.Visible = true -- make sure it’s visible
-console:AddDefaultCommands()
+local console = ConsoleLib:Create()
+console:Output("ConsoleLib loaded! 🐐") -- first log
 
--- Example Roblox-specific commands
-local player = game:GetService("Players").LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local humanoid = char:WaitForChild("Humanoid")
+-- Create Rayfield window
+local Window = Rayfield:CreateWindow({
+    Name = "Build a plane Hub"
+})
 
--- Noclip
-local noclipEnabled = false
-console:RegisterCommand("noclip", function()
-    noclipEnabled = not noclipEnabled
-    console:Output("Noclip " .. (noclipEnabled and "enabled" or "disabled"))
-    if noclipEnabled then
-        console.NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
-            for _, part in ipairs(char:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end)
-    else
-        if console.NoclipConnection then
-            console.NoclipConnection:Disconnect()
-        end
-        for _, part in ipairs(char:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
+-- Money tab
+local MoneyTab = Window:CreateTab("Money")
+
+-- 💰 Money Inf button
+MoneyTab:CreateButton({
+    Name = "💰 Money Inf",
+    Callback = function()
+        console:Output("Running money dupe...")
+        -- Skidded code
+        loadstring(game:HttpGet("https://rawscripts.net/raw/UPD-Build-A-Plane-money-dupe-51267"))()
+        console:Output("Money dupe executed ✅")
     end
-end)
+})
 
--- WalkSpeed
-console:RegisterCommand("speed", function(args)
-    local speed = tonumber(args[1])
-    if speed then
-        humanoid.WalkSpeed = speed
-        console:Output("WalkSpeed set to " .. speed)
-    else
-        console:Output("Usage: speed <number>")
+-- Extra example button for testing
+MoneyTab:CreateButton({
+    Name = "Test Button",
+    Callback = function()
+        console:Output("Test button pressed!")
     end
-end)
-
--- JumpPower
-console:RegisterCommand("jump", function(args)
-    local jp = tonumber(args[1])
-    if jp then
-        humanoid.JumpPower = jp
-        console:Output("JumpPower set to " .. jp)
-    else
-        console:Output("Usage: jump <number>")
-    end
-end)
-
--- Auto-focus input for easy typing
-console.Input:CaptureFocus()
-
--- Optional: print ready message
-console:Output("Console loaded! Type 'help' for commands")
+})
