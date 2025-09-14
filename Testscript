@@ -1,6 +1,9 @@
 -- Tiny ConsoleLib Loader for Delta (PowerShell styled, with extra commands)
 local ConsoleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib"))()
-local console = ConsoleLib:Create()
+local console = ConsoleLib:Create() -- builds GUI
+
+-- Ensure GUI is visible on spawn
+console.Frame.Visible = true
 
 console:Output("ConsoleLib loaded! 🐐")
 console:AddDefaultCommands()
@@ -15,7 +18,47 @@ local noclipEnabled = false
 console:RegisterCommand("noclip", function()
 	noclipEnabled = not noclipEnabled
 	console:Output("Noclip " .. (noclipEnabled and "enabled" or "disabled"))
-
 	if noclipEnabled then
-		game:GetService("RunService").Stepped:Connect(function()
-			if noclipEnabled and char and
+		console.NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
+			for _, part in ipairs(char:GetChildren()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+				end
+			end
+		end)
+	else
+		if console.NoclipConnection then
+			console.NoclipConnection:Disconnect()
+		end
+		for _, part in ipairs(char:GetChildren()) do
+			if part:IsA("BasePart") then
+				part.CanCollide = true
+			end
+		end
+	end
+end)
+
+-- Speed changer
+console:RegisterCommand("speed", function(args)
+	local speed = tonumber(args[1])
+	if speed then
+		humanoid.WalkSpeed = speed
+		console:Output("WalkSpeed set to " .. speed)
+	else
+		console:Output("Usage: speed <number>")
+	end
+end)
+
+-- Jump power changer
+console:RegisterCommand("jump", function(args)
+	local jp = tonumber(args[1])
+	if jp then
+		humanoid.JumpPower = jp
+		console:Output("JumpPower set to " .. jp)
+	else
+		console:Output("Usage: jump <number>")
+	end
+end)
+
+-- Ensure input box is focused for typing
+console.Input:CaptureFocus()
