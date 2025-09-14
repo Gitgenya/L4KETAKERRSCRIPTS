@@ -1,16 +1,17 @@
--- ConsoleLib.lua (PowerShell inspired, with Minimize + Mobile friendly)
+-- ConsoleLib.lua (PowerShell inspired, fixed input positioning + output prefix)
 local ConsoleLib = {}
 ConsoleLib.__index = ConsoleLib
 
 ConsoleLib.config = {
     Width = 300,
     Height = 250,
-    MinHeight = 30, -- collapsed state
+    MinHeight = 25, -- collapsed state
     BackgroundColor = Color3.fromRGB(12, 12, 12),
     TextColor = Color3.fromRGB(200, 200, 200),
     AccentColor = Color3.fromRGB(0, 120, 215),
     Font = Enum.Font.Code,
     MaxLines = 300,
+    InputHeight = 20
 }
 
 function ConsoleLib:Create()
@@ -27,7 +28,7 @@ function ConsoleLib:Create()
     Frame.BackgroundColor3 = self.config.BackgroundColor
     Frame.BorderSizePixel = 0
     Frame.Active = true
-    Frame.Draggable = true -- mobile draggable
+    Frame.Draggable = true
     Frame.Parent = ScreenGui
 
     -- Topbar
@@ -72,7 +73,7 @@ function ConsoleLib:Create()
 
     -- Scroller
     local Scroller = Instance.new("ScrollingFrame")
-    Scroller.Size = UDim2.new(1, -10, 1, -55)
+    Scroller.Size = UDim2.new(1, -10, 1, -35 - self.config.InputHeight)
     Scroller.Position = UDim2.new(0, 5, 0, 30)
     Scroller.CanvasSize = UDim2.new(0, 0, 0, 0)
     Scroller.BackgroundTransparency = 1
@@ -82,11 +83,12 @@ function ConsoleLib:Create()
     local UIListLayout = Instance.new("UIListLayout")
     UIListLayout.Parent = Scroller
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0,2)
 
     -- Input
     local Input = Instance.new("TextBox")
-    Input.Size = UDim2.new(1, -10, 0, 20)
-    Input.Position = UDim2.new(0, 5, 1, -25)
+    Input.Size = UDim2.new(1, -10, 0, self.config.InputHeight)
+    Input.Position = UDim2.new(0, 5, 1, -self.config.InputHeight - 5)
     Input.BackgroundColor3 = Color3.fromRGB(20,20,20)
     Input.BorderColor3 = self.config.AccentColor
     Input.TextColor3 = self.config.TextColor
@@ -94,7 +96,8 @@ function ConsoleLib:Create()
     Input.ClearTextOnFocus = false
     Input.Font = self.config.Font
     Input.TextSize = 14
-    Input.Text = "C:/"
+    Input.Text = ""
+    Input.PlaceholderText = "Type command..."
     Input.Parent = Frame
 
     local console = setmetatable({
@@ -109,17 +112,18 @@ function ConsoleLib:Create()
     Input.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local text = Input.Text
-            console:Output("C:/ " .. text)
+            if text ~= "" then
+                console:Output("C:/ " .. text) -- only in output
+                local args = string.split(text, " ")
+                local cmd = table.remove(args, 1):lower()
 
-            local args = string.split(text, " ")
-            local cmd = table.remove(args, 1):lower()
-
-            if console.Commands[cmd] then
-                console.Commands[cmd](args)
-            else
-                console:Output("Unknown command: " .. cmd)
+                if console.Commands[cmd] then
+                    console.Commands[cmd](args)
+                else
+                    console:Output("Unknown command: " .. cmd)
+                end
             end
-            Input.Text = "C:/"
+            Input.Text = ""
         end
     end)
 
