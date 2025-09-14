@@ -1,64 +1,63 @@
--- Tiny ConsoleLib Loader for Delta (PowerShell styled, with extra commands)
+-- Loader for ConsoleLib with Roblox commands
 local ConsoleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib"))()
-local console = ConsoleLib:Create() -- builds GUI
-
--- Ensure GUI is visible on spawn
-console.Frame.Visible = true
-
-console:Output("ConsoleLib loaded! 🐐")
+local console = ConsoleLib:Create() -- build GUI
+console.Frame.Visible = true -- make sure it’s visible
 console:AddDefaultCommands()
 
--- Roblox-specific commands
+-- Example Roblox-specific commands
 local player = game:GetService("Players").LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local humanoid = char:WaitForChild("Humanoid")
 
--- Noclip toggle
+-- Noclip
 local noclipEnabled = false
 console:RegisterCommand("noclip", function()
-	noclipEnabled = not noclipEnabled
-	console:Output("Noclip " .. (noclipEnabled and "enabled" or "disabled"))
-	if noclipEnabled then
-		console.NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
-			for _, part in ipairs(char:GetChildren()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = false
-				end
-			end
-		end)
-	else
-		if console.NoclipConnection then
-			console.NoclipConnection:Disconnect()
-		end
-		for _, part in ipairs(char:GetChildren()) do
-			if part:IsA("BasePart") then
-				part.CanCollide = true
-			end
-		end
-	end
+    noclipEnabled = not noclipEnabled
+    console:Output("Noclip " .. (noclipEnabled and "enabled" or "disabled"))
+    if noclipEnabled then
+        console.NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
+            for _, part in ipairs(char:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end)
+    else
+        if console.NoclipConnection then
+            console.NoclipConnection:Disconnect()
+        end
+        for _, part in ipairs(char:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
 end)
 
--- Speed changer
+-- WalkSpeed
 console:RegisterCommand("speed", function(args)
-	local speed = tonumber(args[1])
-	if speed then
-		humanoid.WalkSpeed = speed
-		console:Output("WalkSpeed set to " .. speed)
-	else
-		console:Output("Usage: speed <number>")
-	end
+    local speed = tonumber(args[1])
+    if speed then
+        humanoid.WalkSpeed = speed
+        console:Output("WalkSpeed set to " .. speed)
+    else
+        console:Output("Usage: speed <number>")
+    end
 end)
 
--- Jump power changer
+-- JumpPower
 console:RegisterCommand("jump", function(args)
-	local jp = tonumber(args[1])
-	if jp then
-		humanoid.JumpPower = jp
-		console:Output("JumpPower set to " .. jp)
-	else
-		console:Output("Usage: jump <number>")
-	end
+    local jp = tonumber(args[1])
+    if jp then
+        humanoid.JumpPower = jp
+        console:Output("JumpPower set to " .. jp)
+    else
+        console:Output("Usage: jump <number>")
+    end
 end)
 
--- Ensure input box is focused for typing
+-- Auto-focus input for easy typing
 console.Input:CaptureFocus()
+
+-- Optional: print ready message
+console:Output("Console loaded! Type 'help' for commands")
