@@ -1,34 +1,74 @@
--- Load Rayfield (from Sirius, no inspection)
+-- Load Rayfield
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 -- Create ConsoleLib purely for output
 local ConsoleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gitgenya/L4KETAKERRSCRIPTS/refs/heads/main/Consolelib"))()
 local console = ConsoleLib:Create()
-console:Output("ConsoleLib loaded! 🐐") -- first log
+console:Output("ConsoleLib loaded! 🐐")
 
--- Create Rayfield window
-local Window = Rayfield:CreateWindow({
-    Name = "Build a plane Hub"
-})
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Money tab
+-- Default dash/up speeds
+local teleportSpeed = 500
+local dashSpeed = 500
+
+-- Rayfield Window
+local Window = Rayfield:CreateWindow({Name = "Delta Hub"})
+
+-- Money Tab
 local MoneyTab = Window:CreateTab("Money")
-
--- 💰 Money Inf button
 MoneyTab:CreateButton({
     Name = "💰 Money Inf",
     Callback = function()
         console:Output("Running money dupe...")
-        -- Skidded code
         loadstring(game:HttpGet("https://rawscripts.net/raw/UPD-Build-A-Plane-money-dupe-51267"))()
         console:Output("Money dupe executed ✅")
     end
 })
 
--- Extra example button for testing
-MoneyTab:CreateButton({
-    Name = "Test Button",
+-- Dash/Up Tab
+local MovementTab = Window:CreateTab("Movement")
+
+MovementTab:CreateButton({
+    Name = "⬆️ Teleport Up",
     Callback = function()
-        console:Output("Test button pressed!")
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + Vector3.new(0, teleportSpeed, 0)
+            console:Output("Teleported up by "..teleportSpeed)
+        end
+    end
+})
+
+MovementTab:CreateButton({
+    Name = "➡️ Dash Forward",
+    Callback = function()
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local forward = char.HumanoidRootPart.CFrame.LookVector * dashSpeed
+            char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + forward
+            console:Output("Dashed forward by "..dashSpeed)
+        end
+    end
+})
+
+-- Dash/Teleport Speed Inputs
+MovementTab:CreateInput({
+    Name = "Teleport Speed",
+    PlaceholderText = tostring(teleportSpeed),
+    Callback = function(value)
+        teleportSpeed = tonumber(value) or teleportSpeed
+        console:Output("Teleport speed set to "..teleportSpeed)
+    end
+})
+
+MovementTab:CreateInput({
+    Name = "Dash Speed",
+    PlaceholderText = tostring(dashSpeed),
+    Callback = function(value)
+        dashSpeed = tonumber(value) or dashSpeed
+        console:Output("Dash speed set to "..dashSpeed)
     end
 })
