@@ -3,8 +3,8 @@ local ConsoleLib = {}
 
 -- CONFIG
 ConsoleLib.config = {
-    Width = 640,
-    Height = 400,
+    Width = 320,
+    Height = 200,
     BackgroundColor = Color3.fromRGB(0, 0, 0),
     TextColor = Color3.fromRGB(230, 230, 230),
     Font = Enum.Font.Code,
